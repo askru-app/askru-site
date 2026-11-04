@@ -819,6 +819,15 @@ h2 {
 [hidden] { display: none !important; }
 
 /* The angel, in a dialog — his word was "pop up". */
+/* 🔴 DAKSHINA AS A POP-UP — 4 Nov 2026. Founder: *"dakshina reading complete hote he pop up
+   mai dekha do"*. It used to sit two clicks deep: the review panel, then a "Continue" button
+   standing next to "Not now". Anybody who pressed the wrong one of those two never saw it at
+   all, which is what he reported.
+   The veil is the angel dialog's, reused rather than invented, so there is one
+   full-screen treatment on this page and not two that drift apart. */
+.try-panel.as-pop { position: fixed; z-index: 61; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: calc(100% - 40px); max-width: 420px; max-height: calc(100vh - 48px); overflow-y: auto; }
+.dak-veil { position: fixed; inset: 0; z-index: 60; background: rgba(14, 9, 20, .72); }
 .angel-veil { position: fixed; inset: 0; z-index: 60; display: flex;
   align-items: center; justify-content: center; padding: 20px;
   background: rgba(14, 9, 20, .72); }
@@ -878,6 +887,8 @@ h2 {
 .try-birth-note { margin: 0 0 12px; font-size: 13.5px; color: var(--ink-faint); line-height: 1.55; }
 /* The two answers to "do you know your birth details". Side by side where there is room, stacked
    on a phone — neither is the default, because neither is the common case. */
+/* Prashna: the date and time rows go, because both are 'now'. Only the place stays. */
+.try-birth.prashna-on .try-row { display: none; }
 .try-birth-opts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .try-birth-opts .btn { flex: 1 1 auto; }
 .try-birth-opts em { font-style: normal; opacity: .72; }
@@ -1458,7 +1469,13 @@ a { color: var(--plum-deep); }
           </div>
 
           <div id="try-birth-fields" hidden>
-          <p class="try-birth-note">Ru needs these to cast your chart. Without them she reads the sky as it stands now, and says so.</p>
+          <p class="try-birth-note" id="try-birth-note">Ru needs these to cast your chart. Without them she reads the sky as it stands now, and says so.</p>
+          <!-- 🔴 THE PRASHNA NOTE — 4 Nov 2026. A Prashna kundli is a real chart, cast for the
+               MOMENT THE QUESTION IS ASKED rather than the moment of birth. So it needs one thing,
+               not three: where the person is standing now. The date and time are now, and the page
+               fills those itself. -->
+          <p class="try-birth-note" id="try-prashna-note" hidden>A Prashna kundli is cast for this
+            moment, not for your birth. Ru needs one thing: where you are right now.</p>
           <div class="try-row">
             <input id="try-dob" type="date" aria-label="Date of birth">
             <input id="try-tob" type="time" aria-label="Time of birth, if you know it">
@@ -3403,6 +3420,12 @@ a { color: var(--plum-deep); }
         var bFld = document.getElementById('try-birth-fields');
         if (bAsk) bAsk.hidden = false;
         if (bFld) bFld.hidden = true;
+        var bb2 = document.getElementById('try-birth');
+        if (bb2) bb2.classList.remove('prashna-on');
+        var m1 = document.getElementById('try-birth-note'), m2 = document.getElementById('try-prashna-note');
+        if (m1) m1.hidden = false; if (m2) m2.hidden = true;
+        var pb = document.getElementById('try-pob');
+        if (pb) pb.placeholder = 'Town or city of birth';
       } else {
         buildDeck(deckSizes[chosen] || deckSizes.tarot);
       }
@@ -3448,7 +3471,8 @@ a { color: var(--plum-deep); }
         /* Prashna needs nothing: it IS the reading for somebody who has no birth details at all,
            the date included. Otherwise all three, with no partial credit. */
         open = prashna
-          || (!!(dob && dob.value) && !!(tob && tob.value) && !!(pob && pob.value.trim()));
+          ? !!(pob && pob.value.trim())            /* Prashna: where you are, and nothing else */
+          : (!!(dob && dob.value) && !!(tob && tob.value) && !!(pob && pob.value.trim()));
       }
       if (!open) return;
       if (!askForm.hidden) return;
@@ -3516,8 +3540,17 @@ a { color: var(--plum-deep); }
         prashna = true;
         clearBirth();
         if (ask) ask.hidden = true;
-        if (fields) fields.hidden = true;
-        gateAsk(true);   /* they chose Prashna: nothing else to fill, take them to the box */
+        /* 🔴 THE FIELDS STAY, BUT ONLY ONE OF THEM. A Prashna kundli is a real chart cast for
+           the moment of the question, so it needs where the person is NOW. The date and time
+           are now and the page supplies them at submit; the place cannot be guessed. */
+        if (fields) fields.hidden = false;
+        var bb = document.getElementById('try-birth');
+        if (bb) bb.classList.add('prashna-on');
+        var n1 = document.getElementById('try-birth-note'), n2 = document.getElementById('try-prashna-note');
+        if (n1) n1.hidden = true; if (n2) n2.hidden = false;
+        var pp = document.getElementById('try-pob');
+        if (pp) { pp.placeholder = 'Town or city you are in now'; try { pp.focus(); } catch (e) {} }
+        gateAsk();
       });
 
       /* 🔴 THIS IS THE ONE PLACE ALLOWED TO CLOSE THE BOX. gateAsk() only ever opens, on purpose —
@@ -3799,9 +3832,15 @@ a { color: var(--plum-deep); }
       if (chosen === 'vedic') {
         /* Sent as typed; the server resolves the place and casts the chart,
            or says plainly that it could not. Nothing is guessed here. */
+        /* 🔴 PRASHNA SENDS NOW. The chart machinery is generic — it casts for whatever date,
+           time and place it is handed — so a Prashna kundli is today's date, this minute, and
+           where they are standing. Nothing on the server had to change for this. */
+        var nowD = new Date();
+        var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+        body.prashna = prashna;
         body.birth = {
-          dob: (dobEl.value || '').trim(),
-          time: (tobEl.value || '').trim(),
+          dob: prashna ? (nowD.getFullYear() + '-' + pad(nowD.getMonth() + 1) + '-' + pad(nowD.getDate())) : (dobEl.value || '').trim(),
+          time: prashna ? (pad(nowD.getHours()) + ':' + pad(nowD.getMinutes())) : (tobEl.value || '').trim(),
           place: (pobEl.value || '').trim(),
           /* The id when they picked one, null when they typed. The server
              resolves the text to an id itself in that case — it no longer
@@ -3849,6 +3888,10 @@ a { color: var(--plum-deep); }
              nobody uses ten. It sits BELOW the follow-up box, so it
              interrupts nothing. */
           showAfter();
+          /* 🔴 AND THE DAKSHINA COMES UP ITSELF, on his instruction. showAfter() still draws the
+             review panel below; this is the one thing he asked to stop being hidden behind a
+             button somebody has to find. */
+          showDakshina(true);
         }
       }).catch(function () {
         go.disabled = false;
@@ -4002,7 +4045,7 @@ a { color: var(--plum-deep); }
       });
     }
 
-    function showDakshina() {
+    function showDakshina(asPop) {
       if (!afterCfg || !(afterCfg.dakshinaPaise || []).length) return;
       if (!dakRow.firstChild) {
         for (var i = 0; i < afterCfg.dakshinaPaise.length; i++) {
@@ -4010,6 +4053,27 @@ a { color: var(--plum-deep); }
         }
       }
       dak.hidden = false;
+      if (!asPop) return;
+      /* The veil is created on demand and removed with the panel, so nothing invisible is left
+         lying over the page if the dakshina is never opened. */
+      if (!document.getElementById('dak-veil')) {
+        var v = document.createElement('div');
+        v.className = 'dak-veil'; v.id = 'dak-veil';
+        v.addEventListener('click', closeDakPop);
+        document.body.appendChild(v);
+      }
+      dak.classList.add('as-pop');
+      dak.setAttribute('role', 'dialog');
+      dak.setAttribute('aria-modal', 'true');
+    }
+
+    function closeDakPop() {
+      var v = document.getElementById('dak-veil');
+      if (v) v.remove();
+      dak.classList.remove('as-pop');
+      dak.removeAttribute('role');
+      dak.removeAttribute('aria-modal');
+      dak.hidden = true;
     }
 
     function showAfter() {
@@ -4047,6 +4111,7 @@ a { color: var(--plum-deep); }
       dak.hidden = true;
     });
     dakSkip.addEventListener('click', function () {
+      closeDakPop();
       dak.hidden = true;
       say(dakMsg, '');
     });

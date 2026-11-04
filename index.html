@@ -118,7 +118,7 @@ src="https://www.facebook.com/tr?id=3933602676781012&ev=PageView&noscript=1"
      the app now show the same mark. The webp stays as a second, larger hint
      for browsers that prefer it.
 
-     � NO apple-touch-icon, AND THAT IS DELIBERATE. iOS wants a square
+     � NO apple-touch-icon, AND THAT IS DELIBERATE. iOS wants a square
      opaque 180px image. The only sources here are 512px and 1024px app
      icons at 224 KB and 768 KB, and there is no image tooling on this
      machine - the founder's rule is standard library only, so nothing new
@@ -3222,6 +3222,25 @@ a { color: var(--plum-deep); }
         source: 'askru-try',
         language: (langEl && langEl.value) || 'en'
       };
+      /* 🔴 WHERE THEY CAME FROM, SENT WITH THE JOIN — added 4 Nov 2026.
+         Until today only `source` went up, and it is hardcoded 'askru-try', so
+         every waitlist row's campaign was null and no signup could be traced to
+         an ad. The ad ran 3 Nov, 28 people were reached and 12 arrived, and we
+         could not say whether a single one of them joined.
+         Same string shape the visit tracker sends to askru_visit, and the same
+         sessionStorage key, so a join on the second page is still attributed to
+         the ad that started the visit.
+         ⚠️ Wrapped: attribution is never worth failing somebody's join over. */
+      try {
+        var jq = new URLSearchParams(location.search);
+        var jsrc = jq.get('utm_source'), jmed = jq.get('utm_medium'), jcmp = jq.get('utm_campaign');
+        var jcam = (jsrc || jmed || jcmp)
+          ? [jsrc || '-', jmed || '-', jcmp || '-'].join(' | ').slice(0, 200)
+          : sessionStorage.getItem('askru.visit.campaign');
+        if (!jmed && jcam) { var jp = jcam.split(' | '); if (jp[1] && jp[1] !== '-') jmed = jp[1]; }
+        if (jcam) body.campaign = jcam;
+        if (jmed) body.medium = jmed.slice(0, 40);
+      } catch (e) { /* no attribution is better than no join */ }
       var nm = (nameEl.value || '').trim();
       if (nm) body.name = nm;
       var mobile = (phoneEl.value || '').trim();

@@ -1486,7 +1486,14 @@ a { color: var(--plum-deep); }
           </div>
         </div>
 
-        <form class="try-ask" id="try-form" novalidate>
+        <!-- 🔴 SHIPS HIDDEN — 4 Nov 2026. Founder: *"jab user reading leta hai to usko ask
+             question ka box and button tab dekhao ya to wo jab vedic mai details daal de ya fir
+             tarot aur oracle mai card pick kar le, usse pehle dekhane se sirf confusion hota hai"*.
+
+             Before this it had no `hidden` at all, so the question box and its button were on
+             screen from the moment the page loaded — before a mode was chosen, before a card was
+             picked, before anything was typed. `gateAsk()` below is the only thing that opens it. -->
+        <form class="try-ask" id="try-form" novalidate hidden>
           <label class="sr-only" for="try-q">Your question</label>
           <textarea id="try-q" rows="3" maxlength="300"
                     placeholder="What would you like to ask?" aria-label="Your question"></textarea>
@@ -2539,7 +2546,13 @@ a { color: var(--plum-deep); }
              form that a returning payer needs are put in place first. */
           pick.hidden = false;
           modes.hidden = false;
-          askForm.hidden = false;
+          /* 🔴 THE QUESTION BOX IS NOT OPENED HERE ANY MORE — 4 Nov 2026.
+             The two above are what a returning payer needs in order to CHOOSE, and they still go
+             up before we navigate, for the reason the note above gives. But the box they type into
+             waits for `gateAsk()`: a card picked, or a date of birth entered. A payer coming back
+             to a question box over an unpicked deck is the confusion he described. They pick, and
+             it opens. */
+          gateAsk();
           /* ⚠️ THE MODES COME BACK NOW, NOT WHEN THEY PAY. The payment happens
              in another tab and this page is never told, so waiting for a
              signal we do not receive would leave somebody who HAS paid with
@@ -3159,7 +3172,13 @@ a { color: var(--plum-deep); }
         var f = document.getElementById('try-form');
         var msg = document.getElementById('try-msg');
         if (m) m.hidden = false;
-        if (f) f.hidden = false;
+        /* 🔴 THE QUESTION BOX WAITS FOR THE PICK HERE TOO — 4 Nov 2026.
+           This used to open it outright, which both contradicted his rule and helped nobody: the
+           page has just RELOADED, so `picked` is null and no mode is chosen. A question box over
+           an unpicked deck is the exact confusion he described, and typing into it could not have
+           produced a reading anyway. They choose a mode, pick a card or enter a date, and
+           `gateAsk()` opens it. */
+        gateAsk();
 
         /* 🔴 WE DO NOT TELL THEM THE MONEY ARRIVED, because this page does
            not know. Razorpay says 'paid' to the browser; the webhook is what
@@ -3178,7 +3197,11 @@ a { color: var(--plum-deep); }
           else msg.textContent = line;
         }
 
-        var target = f || m;
+        /* `f || m` picked the form even while it was hidden — an element still EXISTS when it is
+           hidden, so the truthiness test was never asking the question it looked like it was
+           asking, and the page scrolled to nothing. Now that `gateAsk()` may legitimately leave it
+           closed, that matters. */
+        var target = (f && !f.hidden) ? f : m;
         if (target) {
           try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { }
         }
@@ -3315,7 +3338,43 @@ a { color: var(--plum-deep); }
       if (chosen === 'vedic') { picked = null; paintDeck(); }
       else buildDeck(deckSizes[chosen] || deckSizes.tarot);
       say(msg, '');
-      q.focus();
+      gateAsk();
+    });
+
+    /* 🔴 THE ONE PLACE THE QUESTION BOX OPENS — 4 Nov 2026.
+     *
+     * Founder: *"jab user reading leta hai to usko ask question ka box and button TAB dekhao ya to
+     * wo jab vedic mai details daal de ya fir tarot aur oracle mai card pick kar le, usse pehle
+     * dekhane se sirf confusion hota hai"*.
+     *
+     * Tarot and Oracle: a card must be picked. He has been firm that the visitor picks their own
+     * card and Ru only shuffles, so a question box standing open over an unpicked deck invites
+     * somebody to type first and discover the ritual afterwards.
+     *
+     * ⚠️ VEDIC IS DELIBERATELY LOOSER, AND HERE IS WHY. The birth block says in its own note that
+     * without these fields "she reads the sky as it stands now, and says so" — so a Vedic reading
+     * with NO birth details is a real, supported path. Gating on all three fields would lock that
+     * visitor out of asking at all. So: the date of birth alone opens it. Anyone who wants the
+     * sky-as-it-stands reading types a date and clears it, or asks after their first reading.
+     * If he wants all three required, this is the single line to change.
+     *
+     * This never CLOSES the box. Once somebody has picked, taking the box away mid-thought would
+     * be a worse bug than the one being fixed. */
+    function gateAsk() {
+      var dob = document.getElementById('try-dob');
+      var open = cardsWanted ? (picked !== null) : !!(dob && dob.value);
+      if (!open) return;
+      if (!askForm.hidden) return;
+      askForm.hidden = false;
+      try { askForm.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { }
+      try { q.focus(); } catch (e) { }
+    }
+
+    /* The Vedic side of the gate. `input` rather than `change` so it opens as they type the year,
+       not when they finally tab away from the field. */
+    ['try-dob', 'try-tob', 'try-pob'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', gateAsk);
     });
 
     function paintDeck() {
@@ -3329,7 +3388,7 @@ a { color: var(--plum-deep); }
       picked = Number(b.getAttribute('data-pick'));
       paintDeck();
       say(msg, '');
-      q.focus();
+      gateAsk();
     });
 
     function bubble(who, text) {

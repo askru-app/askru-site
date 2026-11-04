@@ -876,6 +876,17 @@ h2 {
 }
 .try-birth { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line-faint); }
 .try-birth-note { margin: 0 0 12px; font-size: 13.5px; color: var(--ink-faint); line-height: 1.55; }
+/* The two answers to "do you know your birth details". Side by side where there is room, stacked
+   on a phone — neither is the default, because neither is the common case. */
+.try-birth-opts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.try-birth-opts .btn { flex: 1 1 auto; }
+.try-birth-opts em { font-style: normal; opacity: .72; }
+/* The way back, for somebody who opened the fields and then found they cannot fill them. Set as a
+   quiet link rather than a third button: it is a correction, not a choice being offered again. */
+.try-na { margin: 12px 0 0; }
+.try-link { background: none; border: 0; padding: 0; font: inherit; font-size: 13.5px;
+            color: var(--ink-faint); text-decoration: underline; cursor: pointer; text-align: left; }
+.try-link:hover { color: var(--ink); }
 
 /* Her side and theirs, so a conversation reads as one. */
 .try-out { background: rgba(255,255,255,.03); }
@@ -1426,6 +1437,27 @@ a { color: var(--plum-deep); }
              and asking a Tarot visitor for a birth time is asking for
              something we would then not use. -->
         <div class="try-birth" id="try-birth" hidden>
+          <!-- 🔴 THE QUESTION COMES FIRST — 4 Nov 2026. Founder: *"NA ke saath vedic mai jate he
+               option de do: do you know your birth time and place with date of birth or would you
+               like to have a prashana kundli"*.
+
+               This replaced a quiet checkbox sitting under the three fields. The checkbox worked,
+               and it made the person find it: somebody who does not know their birth time was
+               shown three fields they could not fill and had to notice a tick-box below them to
+               learn there was another way. Asking outright costs one tap and hides nothing.
+
+               ⚠️ Nothing on the server changes. Ru has always read the moment when she has no
+               birth time, and the note below has always said so. This is only a way for the
+               person to SAY that is what they want. -->
+          <div id="try-birth-ask">
+            <p class="try-birth-note">Do you know your date, time and place of birth?</p>
+            <div class="try-birth-opts">
+              <button class="btn btn-ghost" type="button" id="try-birth-yes">Yes, I have all three</button>
+              <button class="btn btn-ghost" type="button" id="try-birth-prashna">No &mdash; read this moment <em>(Prashna Kundli)</em></button>
+            </div>
+          </div>
+
+          <div id="try-birth-fields" hidden>
           <p class="try-birth-note">Ru needs these to cast your chart. Without them she reads the sky as it stands now, and says so.</p>
           <div class="try-row">
             <input id="try-dob" type="date" aria-label="Date of birth">
@@ -1443,6 +1475,10 @@ a { color: var(--plum-deep); }
                had none, so a dropdown that could not load was
                indistinguishable from a town we do not have. -->
           <p class="wl-msg" id="try-place-msg" role="status" aria-live="polite"></p>
+          <!-- A way back, for somebody who opened the fields and then found they do not have
+               them. Without it the only route out is reloading the page. -->
+          <p class="try-na"><button class="try-link" type="button" id="try-birth-back">I don&rsquo;t know these after all &mdash; read this moment instead</button></p>
+          </div>
         </div>
 
         <!-- 🔴 THE WHOLE DECK, FACE DOWN, AND THE VISITOR TAPS ONE.
@@ -2330,6 +2366,9 @@ a { color: var(--plum-deep); }
     /* Which of the five they tapped — a POSITION, never a card. The page is
        never told which card is where; `try-ru` maps the position. */
     var picked = null;
+    /* Set when the visitor answers "no" to the birth-details question, or comes back from the
+       fields. It is the whole of the Vedic gate when true, because Prashna needs nothing. */
+    var prashna = false;
 
     /* localStorage throws in a private window on some browsers, and the page
        must work without it — it only saves somebody re-typing their email. */
@@ -3335,8 +3374,28 @@ a { color: var(--plum-deep); }
       /* Held back until the ritual is done — see above. */
       cards.hidden = true;
       cardsWanted = chosen !== 'vedic';
-      if (chosen === 'vedic') { picked = null; paintDeck(); }
-      else buildDeck(deckSizes[chosen] || deckSizes.tarot);
+      /* 🔴 CHANGING MODE CLEARS THE ANSWER AND SHUTS THE BOX, whichever mode is being left.
+       *
+       * `picked` used to survive a Tarot -> Oracle switch, so the gate still read "a card is
+       * picked" over a freshly built Oracle deck with nothing selected — the question box stood
+       * open above an untouched deck, which is the exact complaint being fixed, reached by a
+       * different door. And a Prashna answer carried back into Vedic would silently decide for
+       * somebody who returned specifically to enter the birth details they had gone to look up.
+       *
+       * This is the second place allowed to close the box, and for the same reason as the first:
+       * the person changed the mode themselves. Nothing is being taken from them. */
+      picked = null;
+      prashna = false;
+      askForm.hidden = true;
+      if (chosen === 'vedic') {
+        paintDeck();
+        var bAsk = document.getElementById('try-birth-ask');
+        var bFld = document.getElementById('try-birth-fields');
+        if (bAsk) bAsk.hidden = false;
+        if (bFld) bFld.hidden = true;
+      } else {
+        buildDeck(deckSizes[chosen] || deckSizes.tarot);
+      }
       say(msg, '');
       gateAsk();
     });
@@ -3361,8 +3420,24 @@ a { color: var(--plum-deep); }
      * This never CLOSES the box. Once somebody has picked, taking the box away mid-thought would
      * be a worse bug than the one being fixed. */
     function gateAsk() {
-      var dob = document.getElementById('try-dob');
-      var open = cardsWanted ? (picked !== null) : !!(dob && dob.value);
+      var open;
+      if (cardsWanted) {
+        open = picked !== null;
+      } else {
+        /* 🔴 ALL THREE — 4 Nov 2026, founder: *"vedic mai jab tak teeno field na fill ho dont
+           open question box"*. My first version opened on the date alone, reasoning that a
+           reading without a birth time is a supported path and requiring all three would lock
+           those people out. He gave the better answer: keep the requirement AND give them a door.
+           That door is the NA box, which declares the Prashna case outright instead of leaving
+           somebody stuck in front of two fields they cannot fill. */
+        var dob = document.getElementById('try-dob');
+        var tob = document.getElementById('try-tob');
+        var pob = document.getElementById('try-pob');
+        /* Prashna needs nothing: it IS the reading for somebody who has no birth details at all,
+           the date included. Otherwise all three, with no partial credit. */
+        open = prashna
+          || (!!(dob && dob.value) && !!(tob && tob.value) && !!(pob && pob.value.trim()));
+      }
       if (!open) return;
       if (!askForm.hidden) return;
       askForm.hidden = false;
@@ -3370,12 +3445,65 @@ a { color: var(--plum-deep); }
       try { q.focus(); } catch (e) { }
     }
 
-    /* The Vedic side of the gate. `input` rather than `change` so it opens as they type the year,
-       not when they finally tab away from the field. */
+    /* The Vedic side of the gate. `input` rather than `change` so it opens as they finish the
+       last of the three, not when they finally tab away from the field. */
     ['try-dob', 'try-tob', 'try-pob'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener('input', gateAsk);
     });
+
+    /* The two answers, and the way back from either. */
+    (function () {
+      var ask    = document.getElementById('try-birth-ask');
+      var fields = document.getElementById('try-birth-fields');
+      var yes    = document.getElementById('try-birth-yes');
+      var no     = document.getElementById('try-birth-prashna');
+      var back   = document.getElementById('try-birth-back');
+
+      function clearBirth() {
+        ['try-dob', 'try-tob', 'try-pob'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        var list = document.getElementById('try-places');
+        if (list) list.innerHTML = '';
+        var pm = document.getElementById('try-place-msg');
+        if (pm && typeof say === 'function') say(pm, '');
+      }
+
+      if (yes) yes.addEventListener('click', function () {
+        prashna = false;
+        if (ask) ask.hidden = true;
+        if (fields) fields.hidden = false;
+        var dob = document.getElementById('try-dob');
+        if (dob) { try { dob.focus(); } catch (e) { } }
+        gateAsk();
+      });
+
+      if (no) no.addEventListener('click', function () {
+        /* 🔴 THE FIELDS ARE CLEARED, NOT JUST HIDDEN. A half-typed town left behind would still
+           be read by the submit, and Ru would try to cast a chart out of it — which is the exact
+           opposite of what this button says. */
+        prashna = true;
+        clearBirth();
+        if (ask) ask.hidden = true;
+        if (fields) fields.hidden = true;
+        gateAsk();
+      });
+
+      /* 🔴 THIS IS THE ONE PLACE ALLOWED TO CLOSE THE BOX. gateAsk() only ever opens, on purpose —
+         taking it away mid-thought is worse than the bug being fixed. But somebody coming BACK
+         from the fields has just told us they cannot fill them, and leaving the box open would
+         let them ask with a date and nothing else, which is what he asked to prevent. The close
+         follows their own click; it does not happen to them. */
+      if (back) back.addEventListener('click', function () {
+        prashna = true;
+        clearBirth();
+        if (fields) fields.hidden = true;
+        if (ask) ask.hidden = true;
+        gateAsk();
+      });
+    }());
 
     function paintDeck() {
       Array.prototype.forEach.call(deck.querySelectorAll('.try-card-back'), function (b) {

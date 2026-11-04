@@ -819,15 +819,6 @@ h2 {
 [hidden] { display: none !important; }
 
 /* The angel, in a dialog — his word was "pop up". */
-/* 🔴 DAKSHINA AS A POP-UP — 4 Nov 2026. Founder: *"dakshina reading complete hote he pop up
-   mai dekha do"*. It used to sit two clicks deep: the review panel, then a "Continue" button
-   standing next to "Not now". Anybody who pressed the wrong one of those two never saw it at
-   all, which is what he reported.
-   The veil is the angel dialog's, reused rather than invented, so there is one
-   full-screen treatment on this page and not two that drift apart. */
-.try-panel.as-pop { position: fixed; z-index: 61; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  width: calc(100% - 40px); max-width: 420px; max-height: calc(100vh - 48px); overflow-y: auto; }
-.dak-veil { position: fixed; inset: 0; z-index: 60; background: rgba(14, 9, 20, .72); }
 .angel-veil { position: fixed; inset: 0; z-index: 60; display: flex;
   align-items: center; justify-content: center; padding: 20px;
   background: rgba(14, 9, 20, .72); }
@@ -1703,22 +1694,8 @@ a { color: var(--plum-deep); }
         </div>
         <div class="try-after-row" id="try-after-links"></div>
         <div class="try-after-feet">
-          <button class="btn btn-primary" type="button" id="try-after-next" hidden>Continue</button>
           <button class="btn btn-ghost" type="button" id="try-after-skip">Not now</button>
         </div>
-      </div>
-
-      <div class="try-panel try-after" id="try-dakshina" hidden>
-        <p class="try-after-title">Dakshina</p>
-        <!-- 🔴 SAID EVERY TIME, NOT ONCE IN A HELP PAGE. Without this line an
-             amount under a finished reading reads as a price somebody forgot
-             to charge — a different product, and a different law. -->
-        <p class="try-after-body">Only if you want to. It buys nothing, and it changes nothing about your reading.</p>
-        <div class="try-after-row" id="try-dakshina-amounts"></div>
-        <div class="try-after-feet">
-          <button class="btn btn-ghost" type="button" id="try-dakshina-skip">No thanks</button>
-        </div>
-        <p class="wl-msg" id="try-dakshina-msg" role="status" aria-live="polite"></p>
       </div>
 
       <!-- 🔴 HIS DEAL, IN HIS OWN TERMS — 29 Oct 2026:
@@ -3888,10 +3865,6 @@ a { color: var(--plum-deep); }
              nobody uses ten. It sits BELOW the follow-up box, so it
              interrupts nothing. */
           showAfter();
-          /* 🔴 AND THE DAKSHINA COMES UP ITSELF, on his instruction. showAfter() still draws the
-             review panel below; this is the one thing he asked to stop being hidden behind a
-             button somebody has to find. */
-          showDakshina(true);
         }
       }).catch(function () {
         go.disabled = false;
@@ -3971,12 +3944,12 @@ a { color: var(--plum-deep); }
 
     var after = document.getElementById('try-after');
     var afterLinks = document.getElementById('try-after-links');
-    var afterNext = document.getElementById('try-after-next');
+
     var afterSkip = document.getElementById('try-after-skip');
-    var dak = document.getElementById('try-dakshina');
-    var dakRow = document.getElementById('try-dakshina-amounts');
-    var dakSkip = document.getElementById('try-dakshina-skip');
-    var dakMsg = document.getElementById('try-dakshina-msg');
+
+
+
+
 
     /* Null until the GET answers, and null means draw nothing. */
     var afterCfg = null;
@@ -3998,91 +3971,12 @@ a { color: var(--plum-deep); }
       return a;
     }
 
-    function afterGive(paise) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'btn btn-primary';
-      b.textContent = '₹' + Math.round(paise / 100);
-      b.addEventListener('click', function () { give(paise, b); });
-      return b;
-    }
-
-    function busy(on) {
-      var all = dakRow.getElementsByTagName('button');
-      for (var i = 0; i < all.length; i++) all[i].disabled = on;
-    }
-
-    function give(paise, btn) {
-      busy(true);
-      var was = btn.textContent;
-      btn.textContent = 'Opening…';
-      say(dakMsg, '');
-      /* Same rule as the reading button — granted on the tap, or it is a popup. */
-      var payTab = payTabOpen();
-      api('try-dakshina', { body: { token: token, amount_paise: paise } }).then(function (res) {
-        busy(false);
-        btn.textContent = was;
-        var b = res.body;
-        if (!b || res.status >= 400 || b.ok !== true || !b.payUrl) {
-          payTabClose(payTab);
-          /* `err()` nests its message under `error`; `json()` does not. Both
-             shapes are read, because one of them is a sentence written for
-             this exact moment — "Take your reading first." */
-          var m = (b && ((b.error && b.error.message) || b.message)) || null;
-          say(dakMsg, m || 'That could not be opened. Nothing was taken.', 'bad');
-          return;
-        }
-        /* ⚠️ OPENED, NOT RECEIVED. Only the webhook knows whether anything
-           was paid and it may arrive long after this tab is gone, so nothing
-           here says thank you. */
-        say(dakMsg, 'Opening the payment page.');
-        payTabGo(payTab, b.payUrl);
-      }).catch(function () {
-        payTabClose(payTab);
-        busy(false);
-        btn.textContent = was;
-        say(dakMsg, 'That could not be opened. Nothing was taken.', 'bad');
-      });
-    }
-
-    function showDakshina(asPop) {
-      if (!afterCfg || !(afterCfg.dakshinaPaise || []).length) return;
-      if (!dakRow.firstChild) {
-        for (var i = 0; i < afterCfg.dakshinaPaise.length; i++) {
-          dakRow.appendChild(afterGive(afterCfg.dakshinaPaise[i]));
-        }
-      }
-      dak.hidden = false;
-      if (!asPop) return;
-      /* The veil is created on demand and removed with the panel, so nothing invisible is left
-         lying over the page if the dakshina is never opened. */
-      if (!document.getElementById('dak-veil')) {
-        var v = document.createElement('div');
-        v.className = 'dak-veil'; v.id = 'dak-veil';
-        v.addEventListener('click', closeDakPop);
-        document.body.appendChild(v);
-      }
-      dak.classList.add('as-pop');
-      dak.setAttribute('role', 'dialog');
-      dak.setAttribute('aria-modal', 'true');
-    }
-
-    function closeDakPop() {
-      var v = document.getElementById('dak-veil');
-      if (v) v.remove();
-      dak.classList.remove('as-pop');
-      dak.removeAttribute('role');
-      dak.removeAttribute('aria-modal');
-      dak.hidden = true;
-    }
-
     function showAfter() {
-      if (!afterCfg || !after.hidden || !dak.hidden) return;
+      if (!afterCfg || !after.hidden) return;
       var links = [];
       if (afterCfg.reviewUrl) links.push(afterLink('Leave a review', afterCfg.reviewUrl));
       if (afterCfg.facebookUrl) links.push(afterLink('Facebook', afterCfg.facebookUrl));
       if (afterCfg.instagramUrl) links.push(afterLink('Instagram', afterCfg.instagramUrl));
-      var amounts = (afterCfg.dakshinaPaise || []).length;
 
       /* 🔴 THE BOX IS REASON ENOUGH TO OPEN THIS PANEL. It used to open only
          when at least one external link existed, because back then the links
@@ -4090,30 +3984,19 @@ a { color: var(--plum-deep); }
          Facebook row would mean clearing one config value silently removed
          the only place anybody can say anything. */
       for (var i = 0; i < links.length; i++) afterLinks.appendChild(links[i]);
-      /* The forward button exists only when there is something to go forward
-         TO. With no amounts it would be a button that closes the panel while
-         saying "Continue". */
-      afterNext.hidden = amounts === 0;
-      afterSkip.textContent = amounts ? 'Not now' : 'Close';
+      /* 🔴 ONE BUTTON NOW, AND IT CLOSES — 4 Nov 2026. Founder: *"Dakshina ka option website se
+         hata de bilkul, wo work nahi karega"*. The panel used to carry a "Continue" that led to
+         the dakshina and a "Not now" beside it. With nothing to continue TO, a second button
+         would be one that closes the panel while saying Continue. */
+      afterSkip.textContent = 'Close';
       after.hidden = false;
     }
-
-    afterNext.addEventListener('click', function () {
-      after.hidden = true;
-      showDakshina();
-    });
 
     /* 🔴 THE SKIP IS A BUTTON, NOT AN ABSENCE. "Ignore it and scroll past" is
        not a choice somebody made — it is a panel they could not get rid of.
        Founder: *"agar user skip karna chahie to ussi skip ka option de do"*. */
     afterSkip.addEventListener('click', function () {
       after.hidden = true;
-      dak.hidden = true;
-    });
-    dakSkip.addEventListener('click', function () {
-      closeDakPop();
-      dak.hidden = true;
-      say(dakMsg, '');
     });
 
     /* ── step 3 — the ten ──────────────────────────────────────────── */

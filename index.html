@@ -3387,6 +3387,16 @@ a { color: var(--plum-deep); }
       picked = null;
       prashna = false;
       askForm.hidden = true;
+      /* 🔴 A NEW MODE IS A NEW READING — 4 Nov 2026. Founder: *"agar maine vedic se question put
+         kiya then tarot se, to new box ki jagha same box mai he sab kuch continue ho raha hai,
+         which is wrong"*. He is right, and on video it reads badly: a Five of Swords tarot answer
+         appended underneath a Venus-Pratyantar chart reading, in one unbroken thread, as though
+         Ru were still answering the first question.
+         bubble() only ever appended; nothing ever cleared the panel. The thread is the TRANSCRIPT
+         of one reading, so changing the reading has to start a blank one. */
+      out.innerHTML = '';
+      out.hidden = true;
+      q.value = '';
       if (chosen === 'vedic') {
         paintDeck();
         var bAsk = document.getElementById('try-birth-ask');
@@ -3419,7 +3429,9 @@ a { color: var(--plum-deep); }
      *
      * This never CLOSES the box. Once somebody has picked, taking the box away mid-thought would
      * be a worse bug than the one being fixed. */
-    function gateAsk() {
+    /* `move` — scroll to the box and put the caret in it. A click passes true; typing never does.
+       See the note at the bottom of this function for what that cost. */
+    function gateAsk(move) {
       var open;
       if (cardsWanted) {
         open = picked !== null;
@@ -3441,6 +3453,19 @@ a { color: var(--plum-deep); }
       if (!open) return;
       if (!askForm.hidden) return;
       askForm.hidden = false;
+
+      /* 🔴 ONLY A CLICK MAY MOVE THEM — 4 Nov 2026, and this was my bug, hours old.
+       *
+       * Founder: *"jab details put kar raha hu to place ki box mai type karte he wo question box
+       * pe chala jata hai"*. He was typing "Jaipur". The gate is satisfied the instant the place
+       * field is non-empty, so on the "J" this ran, scrolled the page away and called q.focus() —
+       * which took the caret out of the box he was still typing into, mid-word.
+       *
+       * A reveal and a JOURNEY are two different things and I had welded them together. Opening
+       * the box is right on any trigger; carrying somebody to it is right only when they just
+       * pressed something and are waiting to be taken somewhere — a card, Prashna, "Yes, I have
+       * all three". Never while their hands are in a field. */
+      if (!move) return;
       try { askForm.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { }
       try { q.focus(); } catch (e) { }
     }
@@ -3449,7 +3474,11 @@ a { color: var(--plum-deep); }
        last of the three, not when they finally tab away from the field. */
     ['try-dob', 'try-tob', 'try-pob'].forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.addEventListener('input', gateAsk);
+      /* 🔴 WRAPPED, NOT PASSED DIRECTLY. `addEventListener('input', gateAsk)` hands the Event in
+         as the first argument, so `move` arrived TRUTHY and the focus-steal I had just removed
+         came straight back — the fix was live and did nothing. Caught by the test, not by
+         reading it: a listener reference looks like a call with no arguments and is not one. */
+      if (el) el.addEventListener('input', function () { gateAsk(); });
     });
 
     /* The two answers, and the way back from either. */
@@ -3477,7 +3506,7 @@ a { color: var(--plum-deep); }
         if (fields) fields.hidden = false;
         var dob = document.getElementById('try-dob');
         if (dob) { try { dob.focus(); } catch (e) { } }
-        gateAsk();
+        gateAsk();   /* no move: the caret belongs in the date field they just asked for */
       });
 
       if (no) no.addEventListener('click', function () {
@@ -3488,7 +3517,7 @@ a { color: var(--plum-deep); }
         clearBirth();
         if (ask) ask.hidden = true;
         if (fields) fields.hidden = true;
-        gateAsk();
+        gateAsk(true);   /* they chose Prashna: nothing else to fill, take them to the box */
       });
 
       /* 🔴 THIS IS THE ONE PLACE ALLOWED TO CLOSE THE BOX. gateAsk() only ever opens, on purpose —
@@ -3501,7 +3530,7 @@ a { color: var(--plum-deep); }
         clearBirth();
         if (fields) fields.hidden = true;
         if (ask) ask.hidden = true;
-        gateAsk();
+        gateAsk(true);   /* came back from the fields: same as choosing Prashna */
       });
     }());
 
@@ -3516,7 +3545,7 @@ a { color: var(--plum-deep); }
       picked = Number(b.getAttribute('data-pick'));
       paintDeck();
       say(msg, '');
-      gateAsk();
+      gateAsk(true);   /* a tap on a card: take them to the box */
     });
 
     function bubble(who, text) {

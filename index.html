@@ -2948,7 +2948,23 @@ a { color: var(--plum-deep); }
                that looked like it had helped. */
             chosenPlaceId = p.id || null;
             clearPlaces();
-            try { pobEl.focus(); } catch (e) { /* older browsers */ }
+            /* 🔴 PICKING A PLACE CARRIES THEM ON — 5 Nov 2026. Founder: *"ek field jab
+               fill ho jaye to wo auto jump ho dusri field box pe"*.
+
+               ⚠️ A PICK IS A CLICK, which is the only thing allowed to move somebody —
+               see the long note in `gateAsk`. Typing a place must never move the caret,
+               and does not: this runs from the dropdown button, not from `input`.
+
+               `gateAsk(true)` moves only when every field it needs is already filled,
+               so on a Vedic reading with no date yet it does nothing — and then the
+               branch below puts them in whichever field is still empty, rather than
+               leaving them standing in a place box they have finished with. */
+            gateAsk(true);
+            if (askForm.hidden) {
+              var missing = ['try-dob', 'try-tob'].map(function (id) { return document.getElementById(id); })
+                .filter(function (el) { return el && !el.value && el.offsetParent !== null; })[0];
+              try { (missing || pobEl).focus(); } catch (e) { /* older browsers */ }
+            }
           });
           li.appendChild(b);
           placesEl.appendChild(li);
@@ -3456,8 +3472,23 @@ a { color: var(--plum-deep); }
           : (!!(dob && dob.value) && !!(tob && tob.value) && !!(pob && pob.value.trim()));
       }
       if (!open) return;
-      if (!askForm.hidden) return;
-      askForm.hidden = false;
+      /* 🔴 A SECOND REVEAL IS A NO-OP. A SECOND *MOVE* IS NOT — 5 Nov 2026.
+
+         This line used to read `if (!askForm.hidden) return;` and it returned before the
+         move below, which quietly broke the hand-over he asked for the same morning.
+         The common path is: they have their date and time in, they start typing the town,
+         and the FIRST LETTER satisfies the gate — so the box is already open by the time
+         they pick "Hyderabad, Telangana, IN" from the dropdown. The pick then arrived here
+         with `move` true, hit this line, and went home. Reveal done, journey skipped.
+
+         ⚠️ Found by the test, not by reading it. On a cold page the form IS hidden when
+         the place is picked, so the feature works perfectly the first time you try it by
+         hand and fails for everyone who fills the fields in order.
+
+         The reveal still happens once. The move still happens only on `move`, which only
+         three call sites pass and all three are deliberate taps — a card, the Prashna
+         door, and now a place picked from the list. Typing still moves nobody. */
+      if (askForm.hidden) askForm.hidden = false;
 
       /* 🔴 ONLY A CLICK MAY MOVE THEM — 4 Nov 2026, and this was my bug, hours old.
        *
@@ -3484,6 +3515,33 @@ a { color: var(--plum-deep); }
          came straight back — the fix was live and did nothing. Caught by the test, not by
          reading it: a listener reference looks like a call with no arguments and is not one. */
       if (el) el.addEventListener('input', function () { gateAsk(); });
+    });
+
+    /* 🔴 AND ONE FIELD HANDS OVER TO THE NEXT — 5 Nov 2026, his words above.
+
+       ⚠️ `change`, NEVER `input`. On a date and a time field `change` fires when the
+       value is COMPLETE — a whole date, a whole time — while `input` fires on every
+       segment. Using `input` here would be the 4 Nov defect again in a new place: the
+       caret pulled out of a field somebody is still halfway through.
+
+       ⚠️ AND ONLY WHEN THE NEXT FIELD IS EMPTY. Somebody who comes back to CORRECT
+       their date is not filling a form in order; throwing them forward would take them
+       away from the one thing they returned to fix. A hand-over is for a form being
+       filled, not a form being edited.
+
+       ⚠️ `offsetParent === null` skips a hidden field, which is how the Prashna
+       branch is handled without naming it: there the date and time row is display:none,
+       so there is nothing to hand over to and nothing runs. */
+    [['try-dob', 'try-tob'], ['try-tob', 'try-pob']].forEach(function (pair) {
+      var from = document.getElementById(pair[0]);
+      var to   = document.getElementById(pair[1]);
+      if (!from || !to) return;
+      from.addEventListener('change', function () {
+        if (!from.value) return;                 /* cleared, not completed */
+        if (to.value) return;                    /* they are editing, not filling */
+        if (to.offsetParent === null) return;    /* hidden — Prashna */
+        try { to.focus(); } catch (e) { /* older browsers */ }
+      });
     });
 
     /* The two answers, and the way back from either. */
@@ -3570,7 +3628,35 @@ a { color: var(--plum-deep); }
       out.hidden = false;
     }
 
+    /* 🔴 EVERY ANSWER COMES TO THEM — 5 Nov 2026. Founder: *"jab mai read pe click karu
+       to website auto scroll kar ke waha aa jaye ja pe reading ka answer hai varna user
+       confuse hoga"* — and then: *"same cheez ye tarot mai bhi aur orcle mai bhi"*.
+
+       🔴 A WRAPPER, NOT A LINE AT THE CALL SITE. There are THREE callers — the reading,
+       the tarot spread (`deeper`), and a follow-up — and I had already written this at one
+       of them before noticing the other two. A scroll added at one call site is a scroll
+       missing from the other two, on exactly the surfaces he named.
+
+       ⚠️ TO THE FIRST NEW BEAT, not the bottom. `out` holds the whole conversation, so
+       scrolling to the end lands them under the LAST line of a three-beat answer with the
+       first two above the fold — the same confusion, wearing a scrollbar.
+
+       ⚠️ AND NEVER ON A 429. That branch has its own destination: the buy box it just
+       opened. Scrolling after it would drag them off the one control that refusal exists
+       to offer. */
     function render(res) {
+      var firstNewBeat = out.children.length;
+      var drew = renderAnswer(res);
+      if (res.status !== 429 && out.children.length > firstNewBeat) {
+        try {
+          var landing = out.children[firstNewBeat];
+          if (landing) landing.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (e) { /* older browsers */ }
+      }
+      return drew;
+    }
+
+    function renderAnswer(res) {
       var b = res.body;
       /* 🔴 A CAP IS NOT AN ERROR, and must not read like one. Somebody who
          arrives after the day's readings are gone has done nothing wrong;

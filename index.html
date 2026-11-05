@@ -3360,6 +3360,26 @@ a { color: var(--plum-deep); }
           return;
         }
 
+        /* 🔴 META LEARNS THAT SOMEBODY JOINED — founder's yes, 5 Nov 2026.
+           The pixel has been on this page all along, but it only ever fired
+           PageView, so every conversion campaign Meta offered was blind: it
+           could see arrivals and never a signup. One standard Lead event is
+           the whole difference, and it is far smaller than the 'install the
+           pixel' job I wrongly told him he needed.
+           ⚠️ IT TELLS META THE MOMENT SOMEBODY HANDS OVER THEIR DETAILS.
+           That is a data decision, not a technical one, and it was his.
+           🔴 ONLY ON A REAL SUCCESS, AND ONLY ONCE. waitlist-join treats a
+           duplicate signup (23505) as ok, so without the flag a person who
+           submits twice is counted twice and every cost-per-lead we ever read
+           would be flattering. Wrapped: a blocked pixel must never break a
+           join — the list matters, the measurement does not. */
+        try {
+          if (!sessionStorage.getItem('askru.lead.sent')) {
+            if (typeof fbq === 'function') fbq('track', 'Lead');
+            sessionStorage.setItem('askru.lead.sent', '1');
+          }
+        } catch (e) { /* no pixel, no storage, no matter */ }
+
         /* 🔴 THE READING IS THE POINT, SO A MISSING TOKEN IS SAID OUT LOUD.
            The name is on the list either way; what failed is the reading,
            and letting the next step appear without one would put somebody in

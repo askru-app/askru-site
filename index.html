@@ -1448,9 +1448,13 @@ a { color: var(--plum-deep); }
                shown three fields they could not fill and had to notice a tick-box below them to
                learn there was another way. Asking outright costs one tap and hides nothing.
 
-               ⚠️ Nothing on the server changes. Ru has always read the moment when she has no
-               birth time, and the note below has always said so. This is only a way for the
-               person to SAY that is what they want. -->
+               🔴 CORRECTED 5 Nov 2026. This said *"nothing on the server changes"*, and that
+               was wrong twice over. Ru reading "the moment" without a chart is not a prashna;
+               it is a reading with no chart, said honestly. A PRASHNA is a real chart cast for
+               the instant of the question, it has had its own prompt (`chat:prashna`) since
+               26 Oct, and the website never called it — so this button sent `mode: "vedic"`
+               with today's date in the birth fields and Ru was told it was a birth chart.
+               The server now casts the moment itself and asks for the prashna prompt. -->
           <div id="try-birth-ask">
             <p class="try-birth-note">Do you know your date, time and place of birth?</p>
             <div class="try-birth-opts">
@@ -3809,15 +3813,30 @@ a { color: var(--plum-deep); }
       if (chosen === 'vedic') {
         /* Sent as typed; the server resolves the place and casts the chart,
            or says plainly that it could not. Nothing is guessed here. */
-        /* 🔴 PRASHNA SENDS NOW. The chart machinery is generic — it casts for whatever date,
-           time and place it is handed — so a Prashna kundli is today's date, this minute, and
-           where they are standing. Nothing on the server had to change for this. */
-        var nowD = new Date();
-        var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+        /* 🔴 A PRASHNA SENDS NO DATE AND NO TIME — corrected 5 Nov 2026.
+
+           This block used to put TODAY'S DATE and THIS MINUTE into the birth fields and said
+           *"nothing on the server had to change for this"*. That sentence was the bug. The
+           server read them as a BIRTH date and time, cast a birth chart from them, and handed
+           it to Ru under the birth-chart prompt — so she read a person born today, with a
+           dasha and transits computed from this afternoon.
+
+           The founder found it the next morning: *"wo meri details se he answer de raha hai"*.
+           What he was seeing was worse than a reused profile — it was a chart of the wrong
+           kind, read as the right kind.
+
+           🔴 THE MOMENT IS NOW THE SERVER'S OWN CLOCK, AND IT MUST STAY THERE. Whoever
+           chooses the moment chooses the lagna, and choosing the lagna is choosing the
+           answer. A page that could send the time could shop for the reading it wanted.
+           See `prashnaFactsFor` in `try-ru`, and `prashna-facts.ts` for the full argument.
+
+           ⚠️ THE PLACE STILL COMES FROM HERE, because it cannot be guessed — but it is
+           WHERE THEY ARE, not where they were born. The note and the placeholder above say
+           so, and a prashna chart's houses are cut by the horizon in front of them. */
         body.prashna = prashna;
         body.birth = {
-          dob: prashna ? (nowD.getFullYear() + '-' + pad(nowD.getMonth() + 1) + '-' + pad(nowD.getDate())) : (dobEl.value || '').trim(),
-          time: prashna ? (pad(nowD.getHours()) + ':' + pad(nowD.getMinutes())) : (tobEl.value || '').trim(),
+          dob: prashna ? '' : (dobEl.value || '').trim(),
+          time: prashna ? '' : (tobEl.value || '').trim(),
           place: (pobEl.value || '').trim(),
           /* The id when they picked one, null when they typed. The server
              resolves the text to an id itself in that case — it no longer

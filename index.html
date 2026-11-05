@@ -892,6 +892,18 @@ h2 {
 
 /* Her side and theirs, so a conversation reads as one. */
 .try-out { background: rgba(255,255,255,.03); }
+/* 🔴 THE KUNDLI. Two charts side by side once there is room, stacked on a phone —
+   a North Indian chart is square, so two of them at 320px wide each would otherwise
+   force a horizontal scroll on the surface most of this traffic arrives on. */
+.try-charts { max-width: 620px; margin: 18px auto 0; display: grid; gap: 18px; grid-template-columns: 1fr; }
+@media (min-width: 560px) { .try-charts.two { grid-template-columns: 1fr 1fr; } }
+.try-kundli { margin: 0; }
+.try-kundli figcaption { font-size: 13px; color: var(--ink-muted); margin: 0 0 8px; text-align: center; line-height: 1.4; }
+.try-kundli figcaption em { display: block; font-style: normal; color: var(--ink-faint); font-size: 12px; }
+.try-kundli svg { width: 100%; height: auto; display: block; }
+.k-line { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.k-sign { fill: var(--ink-faint); font-size: 11px; text-anchor: middle; }
+.k-graha { fill: var(--ink); font-size: 13px; font-weight: 600; text-anchor: middle; }
 .try-out .try-you {
   margin: 0 0 14px auto; max-width: 86%; padding: 10px 14px; border-radius: 14px 14px 4px 14px;
   background: var(--card-alt); color: var(--ink-muted); font-size: 15.5px;
@@ -1551,6 +1563,11 @@ a { color: var(--plum-deep); }
       </div>
 
       <div class="try-out" id="try-out" hidden aria-live="polite"></div>
+      <!-- 🔴 THE CHART, UNDER THE WORDS — 5 Nov 2026. Founder: *"Prashan mai kundli ki
+           photo bhi dekhao and basically vedic mai bhi 2 charts dekha do lagna and transit
+           user ko"*. Drawn from what the server sends, never from anything this page works
+           out: a chart the browser computed could disagree with the reading beside it. -->
+      <div class="try-charts" id="try-charts" hidden></div>
 
       <!-- ── the angel ───────────────────────────────────────────────
            🔴 29 Oct 2026: *"get and angel website wali mai bhi dalo after
@@ -2353,6 +2370,7 @@ a { color: var(--plum-deep); }
     });
     var deck = document.getElementById('try-deck');
     var out = document.getElementById('try-out');
+    var chartsEl = document.getElementById('try-charts');
     var follow = document.getElementById('try-follow');
     var fq = document.getElementById('try-fq');
     var fgo = document.getElementById('try-follow-go');
@@ -3409,6 +3427,8 @@ a { color: var(--plum-deep); }
          bubble() only ever appended; nothing ever cleared the panel. The thread is the TRANSCRIPT
          of one reading, so changing the reading has to start a blank one. */
       out.innerHTML = '';
+      /* The chart belonged to the reading that just stopped being theirs. */
+      if (chartsEl) { chartsEl.innerHTML = ''; chartsEl.hidden = true; }
       out.hidden = true;
       q.value = '';
       if (chosen === 'vedic') {
@@ -3644,6 +3664,109 @@ a { color: var(--plum-deep); }
        ⚠️ AND NEVER ON A 429. That branch has its own destination: the buy box it just
        opened. Scrolling after it would drag them off the one control that refusal exists
        to offer. */
+    /* ── THE KUNDLI ────────────────────────────────────────────────
+
+       🔴 NORTH INDIAN, WHERE THE HOUSES ARE FIXED AND THE SIGNS ROTATE. House 1 is
+       always top-centre and the houses run ANTICLOCKWISE; the sign in each house is
+       derived from the ascendant, never read off a second field. The app says the same
+       in `kundli-grid.ts`, and says why: a function that takes the house from one field
+       and the sign from another lets the two disagree, and a chart that is internally
+       inconsistent is worse than one that is rotated — nothing in it can be checked.
+
+       ⚠️ BUILT WITH DOM CALLS, NOT `innerHTML`. Every string in here arrives from the
+       server, and this page has no escaping helper. `createElementNS` plus `textContent`
+       cannot produce markup whatever the value is, so the question does not arise. */
+    var GRAHA_SHORT = { Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
+    var SIGN_ORDER = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    /* Where each house's text sits in a 300x300 box: 1 top-centre, then anticlockwise. */
+    var HOUSE_AT = [null,
+      { x: 150, y: 66 }, { x: 76, y: 34 }, { x: 34, y: 74 }, { x: 80, y: 146 },
+      { x: 34, y: 218 }, { x: 76, y: 258 }, { x: 150, y: 224 }, { x: 224, y: 258 },
+      { x: 266, y: 218 }, { x: 220, y: 146 }, { x: 266, y: 74 }, { x: 224, y: 34 }];
+    var CHART_TITLE = {
+      birth: ['Your chart', 'the lagna and where the nine stood'],
+      transit: ['Today, over your chart', 'the same houses, the sky as it is now'],
+      prashna: ['The chart of your question', 'cast for the moment you asked, not for your birth']
+    };
+    var SVGNS = 'http://www.w3.org/2000/svg';
+
+    function svgEl(name, attrs) {
+      var e = document.createElementNS(SVGNS, name);
+      for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) e.setAttribute(k, String(attrs[k]));
+      return e;
+    }
+
+    function kundli(chart) {
+      var lagnaIdx = SIGN_ORDER.indexOf(String(chart.lagnaSign));
+      /* An ascendant we do not recognise means no chart at all. Drawing one anyway
+         would put every sign number in the wrong house and still look like a chart. */
+      if (lagnaIdx < 0) return null;
+
+      var byHouse = {};
+      for (var i = 0; i < chart.grahas.length; i++) {
+        var g = chart.grahas[i];
+        var h = Number(g && g.house);
+        if (!(h >= 1 && h <= 12)) continue;
+        var name = GRAHA_SHORT[g.graha] || String(g.graha || '').slice(0, 2);
+        if (!byHouse[h]) byHouse[h] = [];
+        byHouse[h].push(name + (g.retrograde ? '\u1D3F' : ''));
+      }
+
+      var svg = svgEl('svg', { viewBox: '0 0 300 300', role: 'img' });
+      var title = document.createElementNS(SVGNS, 'title');
+      title.textContent = 'North Indian chart, ascendant ' + chart.lagnaSign;
+      svg.appendChild(title);
+      svg.appendChild(svgEl('rect', { x: 1, y: 1, width: 298, height: 298, 'class': 'k-line' }));
+      svg.appendChild(svgEl('line', { x1: 1, y1: 1, x2: 299, y2: 299, 'class': 'k-line' }));
+      svg.appendChild(svgEl('line', { x1: 299, y1: 1, x2: 1, y2: 299, 'class': 'k-line' }));
+      svg.appendChild(svgEl('polygon', { points: '150,1 299,150 150,299 1,150', 'class': 'k-line' }));
+
+      for (var house = 1; house <= 12; house++) {
+        var at = HOUSE_AT[house];
+        /* sign(house) = ((ascendant - 1 + house - 1) mod 12) + 1 — the app's own formula. */
+        var signNo = ((lagnaIdx + house - 1) % 12) + 1;
+        var sg = svgEl('text', { x: at.x, y: at.y, 'class': 'k-sign' });
+        sg.textContent = String(signNo);
+        svg.appendChild(sg);
+
+        var here = byHouse[house] || [];
+        /* Three to a line. Nine grahas can land in one house and a single line of
+           them would run out of the box on a phone. */
+        for (var r = 0; r < here.length; r += 3) {
+          var t = svgEl('text', { x: at.x, y: at.y + 15 + (r / 3) * 13, 'class': 'k-graha' });
+          t.textContent = here.slice(r, r + 3).join(' ');
+          svg.appendChild(t);
+        }
+      }
+      return svg;
+    }
+
+    /* ⚠️ AN EMPTY LIST LEAVES WHAT IS THERE. A follow-up carries no chart, and
+       wiping the one they are looking at because the next message did not repeat it
+       would take the picture away mid-read. The mode switch clears it instead — that
+       is the moment a chart genuinely stops being theirs. */
+    function showCharts(list) {
+      if (!chartsEl || !list || !list.length) return;
+      chartsEl.innerHTML = '';
+      for (var i = 0; i < list.length; i++) {
+        var c = list[i];
+        if (!c || !c.lagnaSign || !c.grahas || !c.grahas.length) continue;
+        var drawn = kundli(c);
+        if (!drawn) continue;
+        var fig = document.createElement('figure');
+        fig.className = 'try-kundli';
+        var cap = document.createElement('figcaption');
+        var pair = CHART_TITLE[c.kind] || ['Chart', ''];
+        cap.appendChild(document.createTextNode(pair[0]));
+        if (pair[1]) { var em = document.createElement('em'); em.textContent = pair[1]; cap.appendChild(em); }
+        fig.appendChild(cap);
+        fig.appendChild(drawn);
+        chartsEl.appendChild(fig);
+      }
+      chartsEl.className = 'try-charts' + (chartsEl.children.length === 2 ? ' two' : '');
+      chartsEl.hidden = chartsEl.children.length === 0;
+    }
+
     function render(res) {
       var firstNewBeat = out.children.length;
       var drew = renderAnswer(res);
@@ -3769,6 +3892,10 @@ a { color: var(--plum-deep); }
 
       var parts = (b.parts && b.parts.length) ? b.parts : [String(b.reply || '')];
       for (var i = 0; i < parts.length; i++) bubble('ru', String(parts[i]));
+
+      /* The chart under the words. Vedic sends two — the lagna and today's transits
+         over the same houses; a Prashna sends the one chart of the question. */
+      showCharts(b.charts);
 
       /* 🔴 HELD, NOT SHOWN. He asked for a button, not an automatic
          blessing — and once it HAS been taken, a later follow-up must not

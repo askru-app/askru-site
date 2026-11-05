@@ -1175,9 +1175,7 @@ a { color: var(--plum-deep); }
     "Ru says she is an AI, and says \"I don't know\" when a birth time cannot carry an answer"
   ],
   "publisher": {
-    "@type": "Organization",
-    "name": "Teatalz House Of Rume Private Limited",
-    "url": "https://teatalz.com/"
+    "@id": "https://teatalz.com/#org"
   },
   "brand": {
     "@type": "Brand",
@@ -1237,6 +1235,9 @@ a { color: var(--plum-deep); }
           "brand": {
             "@type": "Brand",
             "name": "Ask Ru"
+          },
+          "subOrganization": {
+            "@id": "https://codeupvik.com/#org"
           }
         },
         {
@@ -1244,7 +1245,10 @@ a { color: var(--plum-deep); }
           "@id": "https://codeupvik.com/#org",
           "name": "CodeUpVik",
           "url": "https://codeupvik.com/",
-          "description": "Web, app and AI development studio."
+          "description": "Web, app and AI development studio.",
+          "parentOrganization": {
+            "@id": "https://teatalz.com/#org"
+          }
         }
       ]
     }

@@ -8,44 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-<!--
-  THE MAIN CONTROL.
 
-  FOUNDER, 30 Oct 2026: *"ye mera den hai, it should look attractive"*,
-  *"graphs dekha, pie charts dekha, make it interactive"*, and the one that
-  mattered most — *"color scheme to app se bilkul off set hai"*.
-
-  ── 🔴 THE PALETTE IS THE APP'S, READ OUT OF IT ────────────────────────
-
-  The first draft was dark plum — the investor ROOM's palette, not the app's.
-  `src/theme/colors.ts` is cream with purple accents, and the app is required
-  to stay light:
-
-    paper #faf1dd · card #fffbf0 · ink #3b2f47
-    plum  #7c5cff · gold #c98b2a · rose #ff8fb4
-
-  Every colour below is one of those. None was chosen here.
-
-  ── 🔴 NOTHING IS VISIBLE UNTIL IT IS SWITCHED ON ──────────────────────
-
-  A metric an investor cannot see is not hidden by their page — it is absent
-  from the payload their page receives. A new investor starts with none.
-
-  ── 🔴 REVOKE AND DELETE ARE DIFFERENT, AND THE PAGE SAYS SO ───────────
-
-  Revoke shuts the door and keeps the record of what they were shown; one tap
-  brings them back. Delete takes the switches with it and cannot be undone,
-  so it asks first. His reason for removing somebody — they stopped being an
-  investor — is the first one.
-
-  ── ⚠️ THREE KINDS OF METRIC ───────────────────────────────────────────
-
-  computed — the database answers it; the number sits beside the switch.
-  entered  — only he knows it; there is a box here to write it in.
-  not yet  — no source exists. Said plainly rather than printed as a zero.
-
-  ⚠️ THE CODE IS HELD IN MEMORY AND NOWHERE ELSE.
--->
 <style>
   :root {
     color-scheme: light;
@@ -125,7 +88,6 @@
   .art .stars { inset:0; width:100%; height:100%; opacity:.07; }
   @keyframes turn { to { transform:rotate(360deg) } }
   @media (prefers-reduced-motion: reduce) { .art svg { animation:none !important } }
-
 
   .wrap { max-width:1080px; margin:0 auto; position:relative; }
   .serif { font-family:"Playfair Display", Georgia, serif; }
@@ -369,9 +331,7 @@
           <div style="flex:0 0 auto"><button class="primary" type="button" id="i-save">Save</button></div>
           <div style="flex:0 0 auto"><button class="ghost" type="button" id="i-cancel">Cancel</button></div>
         </div>
-        <!-- 🔴 THE CODE IS BUILT HERE AND STORED NOWHERE. The database keeps a
-             bcrypt of the secret; this sentence is the only place the whole
-             code ever exists, and it is gone when the page is closed. -->
+        
         <p class="sec-note" id="i-note">Their code will be <b>handle-secret</b>. Write it down now — it is hashed on save and cannot be read back.</p>
         <p class="msg" id="i-msg" role="status" aria-live="polite"></p>
       </section>
@@ -388,9 +348,7 @@
       <div class="row" style="margin-top:11px">
         <div style="flex:0 0 auto"><button class="primary" type="button" id="u-post">Post to all investors</button></div>
       </div>
-      <!-- 🔴 POSTING PUBLISHES. IT DOES NOT SEND MAIL. Putting a round of
-           email out under his name is an act he should take deliberately,
-           not something a page does because a row was written. -->
+      
       <p class="sec-note">This appears on every investor’s dashboard straight away. It does <b>not</b> email anybody.</p>
       <p class="msg" id="u-msg" role="status" aria-live="polite"></p>
       <div id="updates"></div>

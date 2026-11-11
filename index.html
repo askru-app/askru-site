@@ -3,69 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- ── 🔴 THE PAGE OPENS AT THE TOP — 2 Nov 2026 ─────────────────────────
-     The founder: *"website ka alignment theek karo, page kholte hi seedha
-     take-reading wale area par aa jata hai."* TWO separate things did that,
-     and only one of them was ours.
 
-     Ours was `showPick()` scrolling on a page load — fixed further down.
-     THIS is the other one, and it is the browser: with `scrollRestoration`
-     at its default `auto`, a reload puts you back where you were. MEASURED
-     with NO token in localStorage — scrolled to 2000, reloaded, came back at
-     2000 — so it was not our script. He reloads this page dozens of times a
-     day and it hit him every time.
-
-     🔴 THE OBVIOUS VERSION OF THIS FIX DOES NOT WORK, AND I SHIPPED IT FOR
-     TEN MINUTES BEFORE MEASURING IT. Checking `navigation.type === 'reload'`
-     and setting `manual` on that load is too late: the value lives on the
-     HISTORY ENTRY and is read when the entry is restored, which has already
-     been decided by the time any script runs. Measured — `navType: reload`,
-     `scrollRestoration: manual`, and `scrollY` still 2000. Setting it on the
-     entry BEFORE the reload gives scrollY 0. So it has to be unconditional,
-     because at set-time nothing can know whether the next load will be a
-     reload or a Back.
-
-     ⚠️ THE PRICE, STATED: back and forward now also land at the top. On this
-     page that costs a scroll position to somebody who opens the privacy,
-     terms or refund page in the footer and presses Back — three links. It is
-     one line to revert if he would rather have the Back behaviour.
-
-     🔵 A `#hash` in the URL is UNAFFECTED: anchor scrolling is not scroll
-     restoration, and the browser still honours it. Verified, not assumed. -->
 <script>
 try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; }
 catch (e) { /* an old browser keeps its own behaviour, which is the default */ }
 </script>
-<!-- ── 🔴 META PIXEL — 30 Oct 2026, id 3933602676781012 ──────────────────
-     Here because the ads could not be optimised without it. Both ad sets
-     were set to optimise for "Landing page views", which Meta can only
-     count through a pixel — and there was none. Meta was being asked to
-     find people likely to produce an event it had no way of observing, so
-     it throttled rather than spend: ₹0.22 of a ₹350/day budget bought ten
-     impressions in a whole evening.
 
-     ⚠️ THIS IS A THIRD PARTY AND IT SETS A COOKIE (`_fbp`). Our own
-     analytics, further down this file, is neither — it sets nothing and
-     sends nowhere but our own Supabase. The two are not the same thing and
-     the privacy policy names them separately, because one of them hands
-     page views to Meta.
-
-     The proof of this working is the DEPLOYED page, never this file:
-       curl -sL https://askru.in/ | grep -c 3933602676781012
-     returns 4, and it was 0 before 30 Oct.
-
-     🔴 IT RETURNS 4, NOT THE 2 THIS COMMENT ORIGINALLY CLAIMED, AND TWO OF
-     THE FOUR ARE THIS COMMENT — the heading above and the curl line itself.
-     A check written inside the file it checks is part of its own answer. It
-     was caught on 2 Nov by somebody told to verify rather than believe, and
-     the wrong number mattered: an unexpected extra occurrence of a pixel id
-     is what a DOUBLE-INITIALISED pixel looks like, and that would silently
-     double every number the next campaign is judged on.
-
-     ⚠️ SO THE NUMBER THAT MEANS ANYTHING IS NOT THIS ONE. What has to be
-     true is that the pixel initialises ONCE and fires PageView ONCE. Both
-     verified on the live page, 2 Nov: one fbq init, one PageView track.
-     Count those on the deployed HTML, not this id. -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -97,34 +40,10 @@ src="https://www.facebook.com/tr?id=3933602676781012&ev=PageView&noscript=1"
 <meta name="twitter:title" content="Ask Ru — Kundli, Tarot and Oracle readings, in plain words">
 <meta name="twitter:description" content="You pick your own cards from all 78 — Ru only shuffles. A real birth chart, not a sun sign. One question, one price, shown before you ask.">
 <meta name="twitter:image" content="https://askru.in/assets/askru-15s-poster.jpg">
-<!-- 🔴 /askru, /askru/ and /askru/index.html all return 200 with byte-identical content
-     (md5 4637872d16c7, measured 19 Oct 2026). Without this, three URLs compete for one
-     page's signals. The trailing-slash form is canonical because codeupvik.com's
-     SoftwareApplication node already points at it. -->
+
 <link rel="canonical" href="https://askru.in/">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
-<!--  =4 THE ICON, DECLARED PROPERLY  3 Nov 2026 
-     Until today this page declared one icon and it was a WEBP. Two things
-     follow from that, and both are invisible to anybody testing on Chrome:
-     Safari has never reliably rendered a webp favicon, and a tab with no
-     icon is what a half-built site looks like.
 
-     =5 WHAT IS *NOT* A PROBLEM, CHECKED RATHER THAN ASSUMED: /favicon.ico
-     returning 404. A browser only reaches for that path when the page
-     declares no icon at all. This page always did, so the 404 was never
-     being requested. The fix is the declaration, not an .ico file.
-
-     The PNG is the app's own 48x48 favicon, 750 bytes, so the website and
-     the app now show the same mark. The webp stays as a second, larger hint
-     for browsers that prefer it.
-
-     � NO apple-touch-icon, AND THAT IS DELIBERATE. iOS wants a square
-     opaque 180px image. The only sources here are 512px and 1024px app
-     icons at 224 KB and 768 KB, and there is no image tooling on this
-     machine - the founder's rule is standard library only, so nothing new
-     gets installed to solve it. Shipping a 768 KB icon to every iPhone that
-     prefetches it is worse than not having one. When a 180px version exists,
-     add: <link rel="apple-touch-icon" sizes="180x180" href="..."> -->
 <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png">
 <link rel="icon" type="image/webp" sizes="any" href="/assets/logo.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1257,22 +1176,13 @@ a { color: var(--plum-deep); }
 <body>
 <div class="dust" aria-hidden="true"></div>
 
-<!-- ── the sky ────────────────────────────────────────────────────────
-     *"animations nahi hai — angels ko fly pass karte hua dekhao, shooting
-     stars dekhao bg mai, and make it look divine."*
 
-     Fixed behind everything, never touchable, and every object here is a
-     transform on the GPU — no images, no script, no timers. The whole
-     layer is removed under prefers-reduced-motion. -->
 <div class="sky" aria-hidden="true">
   <span class="drift drift-a"></span>
   <span class="drift drift-b"></span>
   <span class="halo"></span>
 
-  <!-- ⚠️ MORE STARS, NOT FASTER ONES. Each star is lit for about a fifth of
-       its cycle; shortening the cycle makes the same star streak past again
-       and again, which reads as a loop. Eight of them on unequal delays
-       reads as a sky. -->
+  
   <span class="shoot" style="left: 82%; animation-delay: 1s;"></span>
   <span class="shoot" style="left: 64%; top: 4vh; animation-delay: 3.5s;"></span>
   <span class="shoot" style="left: 96%; top: 12vh; animation-delay: 6s; animation-duration: 9s;"></span>
@@ -1282,7 +1192,7 @@ a { color: var(--plum-deep); }
   <span class="shoot" style="left: 90%; top: -4vh; animation-delay: 17.5s; animation-duration: 10s;"></span>
   <span class="shoot" style="left: 56%; top: 24vh; animation-delay: 21s;"></span>
 
-  <!-- Two, far apart in time, so one crossing is a moment and not a parade. -->
+  
   <span class="angel" style="top: 22%; animation-delay: 4s;">
     <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6"
          stroke-linecap="round" stroke-linejoin="round">
@@ -1305,37 +1215,13 @@ a { color: var(--plum-deep); }
   </span>
 </div>
 
-<!-- ── the ambience control ───────────────────────────────────────────
-     Always on screen, because the sound starts on its own. -->
+
 <button class="amb" id="amb" type="button" aria-pressed="false" aria-label="Background music">
   <span class="amb-icon" id="amb-icon" aria-hidden="true">🔇</span>
   <span class="amb-text" id="amb-text">Music</span>
 </button>
 
-<!-- ── the dedication ───────────────────────────────────────────────
-     🔴 AT THE TOP, 29 Oct 2026: *"website aur app dono mai A tribute to
-     eternal Soul top pe dekhao na ki bottom mai"*. It sat in the footer
-     until now, under the legal row.
 
-     The original note below is kept whole, because the part that matters is
-     not where it goes — it is whose words they are.
-
-     HIS LINE, IN HIS WORDS, 28 Oct 2026. It is not a credit and not a
-     disclaimer, so it gets air and nothing beside it.
-
-     ✅ SETTLED, 29 Oct 2026: "A tribute to Eternal Soul" — this wording, on
-     every surface.
-
-     ⚠️ AND THE WAY IT WAS SETTLED IS WORTH KEEPING. For a day it existed in
-     two forms — "A tribute for eternal souls" on the reels, this one here —
-     because he had written it both ways and I would not pick for him. A peer
-     session then relayed his answer as "keep FOR ETERNAL SOULS, match the
-     website to it", and minutes later he said the opposite to me directly.
-
-     Acting on the relay would have changed this page to the wrong words AND
-     left the reels wrong, and the fix would have been 25 reels and a showreel
-     re-rendered in the other direction. A relayed yes is a report of a
-     decision, not the decision. It is his line; it needed his words. -->
 <div class="wrap tribute">
   <span>A tribute to Eternal Soul</span>
 </div>
@@ -1350,7 +1236,7 @@ a { color: var(--plum-deep); }
 
 <main>
 
-  <!-- ───────────────────────────── hero ───────────────────────────── -->
+  
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
@@ -1381,26 +1267,7 @@ a { color: var(--plum-deep); }
     </div>
   </section>
 
-  <!-- ─────────────────────── take your first reading ───────────────────
-       The founder, 28 Oct 2026: *"website pe try her first nahi likho, waha
-       likho take your first reading with Ru, and ye section video ki upar
-       and see how she reads ke neeche daalo"*, and
-       *"user jab waiting list join kar le ussi ke baad 1 time sirf reading
-       le sakta hai, for followup question sirf 10"*, and
-       *"join waiting list ka option hata do, kyoki try karne se pehle to
-       waise bhi user ko waiting list join karne hoge"*.
-
-       🔴 THE ORDER INVERTED TODAY. It used to be read-first-then-join; it is
-       now join-first-then-read, and the standalone waiting-list form at the
-       foot of the page is GONE because this is the only door and a second
-       one would collect the same people twice.
-
-       ⚠️ EVERY READING HERE SPENDS THE APP'S OWN BALANCE, and one visitor is
-       now ELEVEN model calls, not one. Nothing on this page decides how many
-       may be spent: `try-ru` holds the per-IP limit, the daily reading cap
-       and — the one that actually matters — a daily cap in rupees. A
-       browser-side limit is theatre; a private window defeats it in a second.
-  -->
+  
   <section class="try" id="try">
     <div class="wrap">
       <div class="section-head reveal">
@@ -1408,7 +1275,7 @@ a { color: var(--plum-deep); }
         <p>Join the list, and she reads you once — here, before the app opens.</p>
       </div>
 
-      <!-- step 1 — who you are. This IS the waiting list. -->
+      
       <form class="try-panel reveal" id="try-join" novalidate>
         <div class="try-row">
           <input id="try-name" type="text" name="name" autocomplete="given-name" maxlength="60"
@@ -1427,20 +1294,7 @@ a { color: var(--plum-deep); }
         <button class="btn btn-primary" type="submit" id="try-join-go">Join the list &amp; read me</button>
         <p class="wl-msg" id="try-join-msg" role="status" aria-live="polite"></p>
 
-        <!-- 🔴 THE PERK, AND THE WORDS THAT MAKE IT KEEPABLE.
-             Founder, 28 Oct: *"offer daal de — jo bhi waiting list join karega,
-             weekly 1 reading free uske liye for first 3 months."*
-
-             ⚠️ "FROM THE DAY SHE OPENS", NOT FROM TODAY, and that is the whole
-             difference between an offer and a bait. Launch is months away; three
-             months counted from joining would expire before the app existed, and
-             the first thing these people would do on opening it is discover the
-             perk they joined for had already run out.
-
-             ⚠️ It is also a PROMISE, not a config value. The caps on this page
-             can be changed in a second; this cannot. 13 readings a person, at the
-             ₹0.77 we measured, is ~₹10 each — the cost of keeping it is real and
-             it was named before it was written here. -->
+        
         <p class="try-perk">
           <strong>Join now and your first three months are on us</strong> —
           one free reading every week, from the day she opens.
@@ -1452,7 +1306,7 @@ a { color: var(--plum-deep); }
         </p>
       </form>
 
-      <!-- step 2 — how you want to be read. -->
+      
       <div class="try-panel reveal" id="try-pick" hidden>
         <div class="try-modes" id="try-modes" role="group" aria-label="Choose a reading">
           <button class="btn try-mode" type="button" data-mode="vedic"><svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/></svg><span>Vedic chart</span></button>
@@ -1460,28 +1314,9 @@ a { color: var(--plum-deep); }
           <button class="btn try-mode" type="button" data-mode="oracle"><svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2c.7 4.6 2.5 6.4 7.1 7.1 -4.6.7 -6.4 2.5 -7.1 7.1 -.7 -4.6 -2.5 -6.4 -7.1 -7.1 4.6 -.7 6.4 -2.5 7.1 -7.1z" fill="currentColor" stroke="none"/></svg><span>Oracle card</span></button>
         </div>
 
-        <!-- 🔴 ONLY VEDIC ASKS FOR THESE, and only because only Vedic uses
-             them. *"vedic ke ander kundli details ke liye baki ki details ke
-             need hote hai wo lenge."* A chart cannot be cast without them,
-             and asking a Tarot visitor for a birth time is asking for
-             something we would then not use. -->
+        
         <div class="try-birth" id="try-birth" hidden>
-          <!-- 🔴 THE QUESTION COMES FIRST — 4 Nov 2026. Founder: *"NA ke saath vedic mai jate he
-               option de do: do you know your birth time and place with date of birth or would you
-               like to have a prashana kundli"*.
-
-               This replaced a quiet checkbox sitting under the three fields. The checkbox worked,
-               and it made the person find it: somebody who does not know their birth time was
-               shown three fields they could not fill and had to notice a tick-box below them to
-               learn there was another way. Asking outright costs one tap and hides nothing.
-
-               🔴 CORRECTED 5 Nov 2026. This said *"nothing on the server changes"*, and that
-               was wrong twice over. Ru reading "the moment" without a chart is not a prashna;
-               it is a reading with no chart, said honestly. A PRASHNA is a real chart cast for
-               the instant of the question, it has had its own prompt (`chat:prashna`) since
-               26 Oct, and the website never called it — so this button sent `mode: "vedic"`
-               with today's date in the birth fields and Ru was told it was a birth chart.
-               The server now casts the moment itself and asks for the prashna prompt. -->
+          
           <div id="try-birth-ask">
             <p class="try-birth-note">Do you know your date, time and place of birth?</p>
             <div class="try-birth-opts">
@@ -1492,10 +1327,7 @@ a { color: var(--plum-deep); }
 
           <div id="try-birth-fields" hidden>
           <p class="try-birth-note" id="try-birth-note">Ru needs these to cast your chart. Without them she reads the sky as it stands now, and says so.</p>
-          <!-- 🔴 THE PRASHNA NOTE — 4 Nov 2026. A Prashna kundli is a real chart, cast for the
-               MOMENT THE QUESTION IS ASKED rather than the moment of birth. So it needs one thing,
-               not three: where the person is standing now. The date and time are now, and the page
-               fills those itself. -->
+          
           <p class="try-birth-note" id="try-prashna-note" hidden>A Prashna kundli is cast for this
             moment, not for your birth. Ru needs one thing: where you are right now.</p>
           <div class="try-row">
@@ -1504,40 +1336,17 @@ a { color: var(--plum-deep); }
           </div>
           <input id="try-pob" type="text" maxlength="120" placeholder="Town or city of birth" aria-label="Place of birth"
                  autocomplete="off" role="combobox" aria-expanded="false" aria-controls="try-places">
-          <!-- 🔴 HIS READING SAID "I do not have your birth chart", AND IT
-               WAS RIGHT TO. The free-text place did not resolve, so Ru read
-               the moment rather than claiming a kundli she never cast. The
-               defect was upstream: nothing helped anybody type a place the
-               `places` table actually holds. -->
+          
           <ul class="try-places" id="try-places" role="listbox" aria-label="Matching places"></ul>
-          <!-- 🔴 A PLACE FOR THE SEARCH TO SAY IT FAILED. Until 29 Oct it
-               had none, so a dropdown that could not load was
-               indistinguishable from a town we do not have. -->
+          
           <p class="wl-msg" id="try-place-msg" role="status" aria-live="polite"></p>
-          <!-- A way back, for somebody who opened the fields and then found they do not have
-               them. Without it the only route out is reloading the page. -->
+          
           <p class="try-na"><button class="try-link" type="button" id="try-birth-back">I don&rsquo;t know these after all &mdash; read this moment instead</button></p>
           </div>
         </div>
 
-        <!-- 🔴 THE WHOLE DECK, FACE DOWN, AND THE VISITOR TAPS ONE.
-             The page's own headline says *"I shuffle, and you pick."* A free
-             reading where Ru picks for them argues against the sentence three
-             sections above it. So the choice comes back.
-
-             ⚠️ The page does NOT know which card is where. It sends a
-             POSITION; `try-ru` maps that to a card from a shortlist derived
-             from the session id. A page that held the codes could lay the
-             same flattering card under every finger, and a page that sent a
-             code could simply ask for one. -->
-        <!-- ── a moment, before we begin ─────────────────────────────
-             🔴 HIS WORDS, 6 Oct 2026, copied from the app rather than
-             rewritten: *"pehle user ko bole: please aap apne eyes close
-             kare, 3 baar deep breath le, jinmai bhi aap believe karte hai
-             unke bare mai maan mai soche, aur apne question ko maan bole."*
-
-             ⚠️ The closing line changes with the mode, because Vedic has no
-             deck to pick from. That distinction is the app's. -->
+        
+        
         <div class="try-ritual" id="try-ritual" hidden>
           <h3>A moment, before we begin</h3>
           <ol>
@@ -1553,21 +1362,11 @@ a { color: var(--plum-deep); }
         <div class="try-cards" id="try-cards" hidden>
           <p class="try-cards-note">She has shuffled. <strong>Pick one.</strong></p>
           <div class="try-deck" id="try-deck" role="group" aria-label="Pick a card">
-            <!-- 🔴 BUILT IN SCRIPT, FROM A COUNT THE SERVER SENDS. Five were
-                 written here and `FACE_DOWN = 5` lived in `try-ru` — one
-                 fact in two places, and the copy a visitor could count was
-                 this one. 29 Oct: *"pura deck dekha"*, which is now one
-                 line on the server rather than seventy-three buttons here. -->
+            
           </div>
         </div>
 
-        <!-- 🔴 SHIPS HIDDEN — 4 Nov 2026. Founder: *"jab user reading leta hai to usko ask
-             question ka box and button tab dekhao ya to wo jab vedic mai details daal de ya fir
-             tarot aur oracle mai card pick kar le, usse pehle dekhane se sirf confusion hota hai"*.
-
-             Before this it had no `hidden` at all, so the question box and its button were on
-             screen from the moment the page loaded — before a mode was chosen, before a card was
-             picked, before anything was typed. `gateAsk()` below is the only thing that opens it. -->
+        
         <form class="try-ask" id="try-form" novalidate hidden>
           <label class="sr-only" for="try-q">Your question</label>
           <textarea id="try-q" rows="3" maxlength="300"
@@ -1578,20 +1377,10 @@ a { color: var(--plum-deep); }
       </div>
 
       <div class="try-out" id="try-out" hidden aria-live="polite"></div>
-      <!-- 🔴 THE CHART, UNDER THE WORDS — 5 Nov 2026. Founder: *"Prashan mai kundli ki
-           photo bhi dekhao and basically vedic mai bhi 2 charts dekha do lagna and transit
-           user ko"*. Drawn from what the server sends, never from anything this page works
-           out: a chart the browser computed could disagree with the reading beside it. -->
+      
       <div class="try-charts" id="try-charts" hidden></div>
 
-      <!-- ── the angel ───────────────────────────────────────────────
-           🔴 29 Oct 2026: *"get and angel website wali mai bhi dalo after
-           user has picked card"*. Ships hidden; it appears only once the
-           server has sent one, which it does with the reading.
-
-           ⚠️ The page never learns the CARD — only the angel the card
-           called. That is the same wall `try-ru` keeps everywhere else:
-           a browser that knew the code could post its own. -->
+      
       <div class="try-angel" id="try-angel" hidden>
         <button class="btn btn-ghost" type="button" id="try-angel-go">Get me an angel</button>
         <div class="try-angel-blessing" id="try-angel-out" hidden>
@@ -1600,10 +1389,7 @@ a { color: var(--plum-deep); }
         </div>
       </div>
 
-      <!-- 🔴 THE POP-UP — 29 Oct 2026: *"angel ki image bhi to pop up mai
-           dekhao and jo blessings hai wo mention karo"*. The blessing stays
-           on the page underneath as well, because a dialog is dismissed and
-           the blessing is meant to be kept. -->
+      
       <div class="angel-veil" id="angel-veil" hidden role="dialog" aria-modal="true" aria-labelledby="angel-name">
         <div class="angel-box">
           <img class="angel-face" id="angel-face" src="assets/angel.webp" alt="" loading="lazy"
@@ -1616,19 +1402,11 @@ a { color: var(--plum-deep); }
         </div>
       </div>
 
-      <!-- ── detail it out ───────────────────────────────────────────
-           🔴 THE SAME STEP THE APP HAS. One card is the opening; five are
-           the reading. Hidden until a TAROT reading has landed — it means
-           nothing on a Vedic or Oracle session, and the server refuses it
-           there anyway.
-
-           ⚠️ It does not spend a follow-up. He capped follow-up QUESTIONS
-           at ten; going deeper is the reading continuing, not a question
-           asked of it. It does spend money, and the day cap is checked. -->
+      
       <button class="btn btn-primary try-deeper" type="button" id="try-deeper" hidden>Detail it out</button>
       <div class="try-spread" id="try-spread" hidden></div>
 
-      <!-- step 3 — the ten. -->
+      
       <form class="try-panel try-follow" id="try-follow" novalidate hidden>
         <label class="sr-only" for="try-fq">Ask her something else</label>
         <textarea id="try-fq" rows="2" maxlength="300"
@@ -1637,40 +1415,18 @@ a { color: var(--plum-deep); }
         <p class="wl-msg" id="try-follow-msg" role="status" aria-live="polite"></p>
       </form>
 
-      <!-- ── the streak, which owes nothing ───────────────────────────
-           Founder, 29 Oct 2026: *"uski jagah uske liye kar de ki wo daily
-           streaks kar sake, but iska reward nahi milega, wo app launch ke
-           baad hi"*.
-
-           🔴 THE LAST CLAUSE IS ON SCREEN, NOT JUST IN THE CODE. A streak
-           with no stated terms is read as a promise, and the first person
-           to count to thirty would be owed something nobody agreed to.
-
-           The practices are `flag.streak_activities` — the same eight rows
-           the app draws, sent back by the server, so the two surfaces
-           cannot drift apart. -->
+      
       <div class="try-panel try-streak" id="try-streak" hidden>
         <p class="try-after-title" id="try-streak-title">Come back tomorrow</p>
         <p class="try-after-body">Pick what you did today. It is yours to keep — a quiet record, nothing more.</p>
-        <!-- 🔴 WHAT TODAY ASKS FOR. The founder: *"jo daily streaks hai wo
-             daily change ho, same nahi"*. Written by the server from the
-             date (Ask Ru 0094), so it is the same all day and different
-             tomorrow — and empty when the list cannot be read, rather than
-             a blank line pretending to be a prompt. -->
+        
         <p class="try-todays" id="try-todays" hidden></p>
         <div class="try-practices" id="try-practices"></div>
         <p class="try-streak-note">Rewards for a streak start when the app opens. Until then this only counts the days.</p>
         <p class="wl-msg" id="try-streak-msg" role="status" aria-live="polite"></p>
       </div>
 
-      <!-- 🔴 ONE MORE READING, UNDER THE STREAK — his placement, 29 Oct 2026:
-           *"uska option daily streak ke option ke neeche deda"*. It opens when
-           the free reading is used and there is no free one left today.
-
-           ⚠️ THE PRICE IS NOT IN THIS FILE. `try-reading-pay` answers a GET
-           with the amount and the label is filled from it; with no readable
-           price the button keeps its plain words rather than inventing a
-           number nobody charges. -->
+      
       <div class="try-panel try-more" id="try-buy" hidden>
         <p class="try-after-title">One more, if you want it</p>
         <p class="try-after-body">Your free reading is used, and that one was yours for nothing. If something is still sitting with you — the same question from another side, or a different one — Ru can read you again.</p>
@@ -1679,41 +1435,13 @@ a { color: var(--plum-deep); }
         <p class="wl-msg" id="try-buy-msg" role="status" aria-live="polite"></p>
       </div>
 
-      <!-- ── after the reading — his order, 29 Oct 2026 ─────────────────
-           *"website pe ussi page se pehle dekhao how was your reading please
-           provide a honest review or share experience on social media"*, and
-           then the offering, and *"agar user skip karna chahie to ussi skip
-           ka option de do"*.
-
-           🔴 BOTH SHIP `hidden` AND STAY HIDDEN UNLESS THE SERVER SENDS
-           SOMETHING TO PUT IN THEM. The amounts come from
-           `flag.dakshina_paise` and the links from the three `social.%`
-           rows, so this page can never offer an amount the database will
-           refuse, and never draws a share button that opens nothing — which
-           would fail at the one moment somebody felt like saying something
-           good, and they do not come back to that moment.
-
-           ⚠️ Before Ask Ru 0082 and 0083 are applied those rows do not
-           exist, the GET answers with nothing, and neither panel appears.
-           That is correct rather than broken. -->
+      
       <div class="try-panel try-after" id="try-after" hidden>
-        <!-- 🔴 SAID AFTER THE READING, NOT BEFORE IT. His words, 30 Oct 2026:
-             *"ye mention kar do ki this is a preview of how power Ru is"* and
-             *"pop up mai dekho de jab user reading leta hai"*. Before the
-             reading it is a claim; here it is a claim about something they
-             have just had, which is the only version worth making. -->
+        
         <p class="try-preview">This is a <strong>preview</strong> of how much Ru can do. The full reading — your whole chart, the periods you are in, follow-up questions she remembers — opens with the app. <strong>Stay tuned.</strong></p>
         <p class="try-after-title">How was your reading?</p>
         <p class="try-after-body">If it landed, a few honest words help the next person decide to ask. Leave a review, or tell people how it went on our page.</p>
-        <!-- 🔴 SOMEWHERE TO ACTUALLY WRITE IT — 29 Oct 2026: *"review likhne
-             ki liye option to de on website"*. The panel has been saying
-             "Leave a review" since the 29th with nothing behind it:
-             `flag.review_url` is null, so only the two social buttons ever
-             drew. Ask Ru has no Google Business profile to point at, and a
-             link to nothing is the one thing this panel must not draw.
-
-             ⚠️ The link is NOT removed. Set `flag.review_url` and it
-             appears beside this box; nothing here has to change. -->
+        
         <div class="try-review" id="try-review">
           <div class="try-stars" id="try-stars" role="radiogroup" aria-label="How many stars?">
             <button class="try-star" type="button" data-star="1" role="radio" aria-checked="false" aria-label="1 star">★</button>
@@ -1734,25 +1462,7 @@ a { color: var(--plum-deep); }
         </div>
       </div>
 
-      <!-- 🔴 HIS DEAL, IN HIS OWN TERMS — 29 Oct 2026:
-           *"first 1000 ko free read hai, uske baad wali to waiting list join
-           karege till 10000 jo 31 rs denge, aur 1 to 10000 ko weekly 1 free
-           denge. Ye hi to deal hai, confuse kyo hota hai."*
-
-           ⚠️ THE 5,000 CAME OFF THIS LINE, and it should never have been on
-           it. The seat count (try.total_seats) is an internal COST CAP — how
-           many free website readings the day can afford — not an offer.
-           Printed as a promise it collided with the 1,000 on 25 published
-           reels: two numbers for things that sound identical. The cap still
-           works; it closes the trial when it is reached.
-
-           🔴 "FROM LAUNCH" ON THE WEEKLY IS NOT A HEDGE. The offer.launch_at
-           row is null, so the weekly grants nothing today — his own ruling,
-           that the weekly reading starts with the app. Saying it plainly is
-           the difference between a promise and a date.
-
-           The live count below stays silent until there is a number worth
-           showing — that threshold is the server's, not this page's. -->
+      
       <p class="try-seats reveal" id="try-seats">
         <span>The first 1,000 on the list read free. After that a reading is ₹31 — and from launch, everyone in the first 10,000 gets one free reading a week.</span>
         <span id="try-count" hidden></span>
@@ -1760,18 +1470,11 @@ a { color: var(--plum-deep); }
     </div>
   </section>
 
-  <!-- ─────────────────────────── the film ──────────────────────────────
-       ⚠️ DELIBERATELY EMPTY, 28 Oct 2026. The 15-second cut that lived here
-       was pulled on his instruction — *"ye purana video dataroom se bhi hatao
-       and website se bhi"* — and the replacement is being shot from the app's
-       real screens, every feature, not the old three. The slot stays marked
-       so the new film lands BELOW this reading section, which is where he
-       asked for it: *"ye section video ki upar"*.
-  -->
+  
 
 
 
-  <!-- ─────────────────────────── her voice ─────────────────────────── -->
+  
   <section class="voice">
     <div class="wrap">
       <blockquote class="reveal">“I will not read your chart to you. I will read your life to you.”</blockquote>
@@ -1779,7 +1482,7 @@ a { color: var(--plum-deep); }
     </div>
   </section>
 
-  <!-- ──────────────────────────── the three ────────────────────────── -->
+  
   <section class="three" id="three">
     <div class="wrap">
       <div class="section-head reveal">
@@ -1830,17 +1533,7 @@ a { color: var(--plum-deep); }
         </article>
       </div>
 
-      <!-- ── and four more ────────────────────────────────────────────────
-           Founder, 28 Oct 2026: *"yaha muharat matchmating prashana and daily
-           streak bhi daal."*
-
-           🔴 THEY SIT BELOW THE THREE, NOT BESIDE THEM. Vedic, Tarot and
-           Oracle are the three ways she reads — that is the product's spine
-           and the heading above says so. Muhurat, Match and Prashna are
-           things you can ask FOR; the streak is not a reading at all. Putting
-           seven equal cards in one grid would have made the spine disappear
-           into a feature list, which is the thing this page exists not to be.
-      -->
+      
       <div class="section-head more-head reveal">
         <h3>And four more ways to ask</h3>
       </div>
@@ -1863,18 +1556,14 @@ a { color: var(--plum-deep); }
 
         <article class="mini reveal d1">
           <h4>Daily streak</h4>
-          <!-- ⚠️ THE ONLY ITEM ON THIS PAGE THAT IS NOT BUILT YET. The DB
-               table exists and is empty; the screens are not written. The
-               page says "launching soon" throughout, so a named launch
-               feature is fair — but it is named here so nobody later reads
-               this card as a description of something shipping. -->
+          
           <p>Come back each day and she keeps count. Small rituals, and a reward that turns into credit on your next recharge.</p>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- ──────────────────────────── how ──────────────────────────────── -->
+  
   <section class="how">
     <div class="wrap">
       <div class="section-head reveal">
@@ -1882,8 +1571,7 @@ a { color: var(--plum-deep); }
         <p>Three sections, three different paths. The difference is the point — in one you never touch a card, in another you pick every one of them.</p>
       </div>
       <div class="flows">
-        <!-- 🔴 NO CARDS IN THIS COLUMN. Vedic is arithmetic on a birth chart;
-             a card anywhere in its flow would be a claim the app does not make. -->
+        
         <div class="flow reveal">
           <p class="flow-tag">Vedic</p>
           <ol>
@@ -1917,7 +1605,7 @@ a { color: var(--plum-deep); }
     </div>
   </section>
 
-  <!-- ───────────────────────── plain words ─────────────────────────── -->
+  
   <section class="plain" id="plain">
     <div class="wrap">
       <div class="plain-inner">
@@ -1939,7 +1627,7 @@ a { color: var(--plum-deep); }
     </div>
   </section>
 
-  <!-- ───────────────────────── honest ──────────────────────────────── -->
+  
   <section class="honest">
     <div class="wrap">
       <div class="section-head reveal">
@@ -1957,12 +1645,7 @@ a { color: var(--plum-deep); }
     </div>
   </section>
 
-  <!-- ───────────────────────── close ─────────────────────────────────
-       🔴 NO FORM HERE ANY MORE. *"join waiting list ka option hata do,
-       kyoki try karne se pehle to waise bhi user ko waiting list join karne
-       hoge."* He is right, and the reason is worth keeping: two forms for one
-       list is two places a person can be told "you are already on it", and
-       the second one always reads as a failure. One door, up the page. -->
+  
   <section class="close">
     <div class="wrap">
       <h2 class="reveal">She opens soon.</h2>
@@ -1973,11 +1656,7 @@ a { color: var(--plum-deep); }
     </div>
   </section>
 
-  <!-- 🔴 THE ANSWERS COME FIRST AND THE MARKUP SECOND. A FAQPage node was
-       added on 28 Oct and removed on 29 Oct because none of its five answers
-       was visible anywhere on this page — and the penalty for marking up what
-       a visitor cannot see lands on teatalz.com as a whole, not on one page.
-       The five answers below are the originals, recovered verbatim. -->
+  
   <section class="faq" id="faq" aria-labelledby="faq-h">
     <div class="wrap">
       <h2 id="faq-h">Questions people ask</h2>
@@ -2005,45 +1684,16 @@ a { color: var(--plum-deep); }
   <div class="wrap foot">
     <span>© 2026 Teatalz House of Rume</span>
     <a href="mailto:help@teatalz.com">help@teatalz.com</a>
-    <!-- His instruction, 28 Oct 2026: *"codeupvik ne built kiya hai mention
-         karo, backlink do."* A plain followed link — `rel="nofollow"` would
-         hand Google a note saying the credit does not count, which is the
-         opposite of a backlink. -->
+    
     <span>Built by <a href="https://codeupvik.com">CodeUpVik</a></span>
     <span class="right">Made in India</span>
   </div>
-  <!-- 30 Oct 2026: /kundli-milan/ and /choghadiya/ were live and orphaned — in the
-       sitemap, but with no link from this page. A sitemap gets a page crawled; a link
-       is what carries authority to it and what a reader actually follows. -->
+  
   <div class="wrap foot">
     <span><a href="kundli-milan/">Kundli Milan &mdash; 36 guna</a></span>
     <span><a href="choghadiya/">Aaj ka Choghadiya &amp; Rahu Kaal</a></span>
   </div>
-  <!-- ── 🔴 THE PAGE THAT TAKES MONEY MUST LINK ITS TERMS AND REFUND POLICY ──
-       3 Nov 2026. All three documents have been written, deployed and
-       returning 200 for days, and NOT ONE of them was linked from here. The
-       only privacy link on the page sits inside the waitlist note at :1388,
-       where it qualifies the sentence "never to anybody else" — that is a
-       footnote, not the site's privacy link, and it is deliberately left
-       alone.
-
-       🔴 SOMEBODY WHO PAID COULD NOT REACH THE REFUND POLICY FROM THE PAGE
-       THEY PAID ON. Real money is live here. A linked terms, refund and
-       privacy set is also what a payment gateway expects a merchant site to
-       carry: the documents cleared that bar, the linking did not.
-
-       ⚠️ THE TELL WAS A COMMENT OF MY OWN, higher up this file. Pricing the
-       scroll-restoration change I wrote that it "costs a scroll position to
-       somebody who opens the privacy, terms or refund page in the footer and
-       presses Back — three links." I priced it against a footer that had
-       ZERO. The comment is the artefact proving the links were meant to be
-       here; nobody had looked at the footer since.
-
-       ⚠️ ABSOLUTE URLS, AND THEY POINT AT teatalz.com ON PURPOSE. The three
-       documents live there, are indexed there and are self-canonical there.
-       Copying them onto askru.in would create a second canonical for a legal
-       document on a money path, which is a worse problem than a cross-domain
-       link. Moving them properly is a separate job, not a 1 a.m. one. -->
+  
   <div class="wrap foot">
     <span><a href="https://teatalz.com/askru-privacy.html">Privacy</a></span>
     <span><a href="https://teatalz.com/askru-terms.html">Terms</a></span>
@@ -4397,18 +4047,7 @@ a { color: var(--plum-deep); }
 })();
 </script>
 
-<!-- ── Beta note, in Ru's voice ─────────────────────────────────────────────
-     The founder, 31 Oct 2026, the morning after every reading was down for
-     fourteen hours and one visitor asked three times before giving up.
 
-     🔴 IT SAYS BETA, WHICH IS TRUE, AND ASKS TO BE TOLD. The thing that cost
-     us that outage was not the bug — it was that nobody knew until the
-     founder happened to see a screenshot. An address on the page is the
-     cheapest instrument we have.
-
-     ⚠️ ONCE PER BROWSER, and it fails OPEN: if localStorage throws (private
-     window, blocked site data) the note still shows. A note nobody sees is
-     the same as no note, and showing it twice is a smaller cost than that. -->
 <div id="beta-note" role="status" aria-live="polite" hidden>
   <p>Thank you for coming. I am still in beta — I am being tested and taught.</p>
   <p>If something does not work, or an answer feels wrong, tell me at

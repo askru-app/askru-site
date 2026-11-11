@@ -8,50 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-<!--
-  WHAT AN INVESTOR SEES.
 
-  FOUNDER, 30 Oct 2026: *"investor dashboard auto update ho with data from app
-  and website"*, *"switch de dena for website and app"*, then on the first
-  draft: *"design mai tables mai dekha, graphs dekha, pie charts dekha, make
-  it interactive, even user reviews ka ek section ... 5 review dekhe, rest
-  read more pe click then next 5"*, and — the one that mattered most —
-  *"color scheme to app se bilkul off set hai"*.
-
-  ── 🔴 THE PALETTE IS THE APP'S, READ OUT OF IT ────────────────────────
-
-  The first draft was dark plum, which is the investor ROOM's palette, not
-  the app's. `src/theme/colors.ts` is cream with purple accents and the app
-  is required to stay light:
-
-    paper #faf1dd · card #fffbf0 · ink #3b2f47
-    plum  #7c5cff · gold #c98b2a · rose #ff8fb4
-
-  Every colour below is one of those. None was chosen here.
-
-  ── 🔴 THIS PAGE DECIDES NOTHING ───────────────────────────────────────
-
-  A metric an investor has not been switched on for is ABSENT from the
-  payload, not hidden by the page. Reading this source tells you nothing
-  about what anybody else can see. The switches live in the Founder Den.
-
-  ── NOTHING IS STORED, SO NOTHING GOES STALE ───────────────────────────
-
-  Every number is counted by the database at the moment this page asks.
-
-  ── ⚠️ THE CHARTS AND THE TABLE READ THE SAME COUNT ────────────────────
-
-  The slices come from `series`, the figures from `m` — and 0113's own check
-  refuses to apply if they disagree. A pie whose slices do not add up to the
-  number printed beside it is the investor-facing version of lying.
-
-  ── 🔴 A BLANK IS AN ANSWER HERE ───────────────────────────────────────
-
-  Seven-day retention on day two is not 0% — it is unanswerable, and the
-  server says so in a sentence, which this page prints instead of a number.
-
-  ⚠️ THE CODE IS HELD IN MEMORY AND NOWHERE ELSE.
--->
 <style>
   :root {
     color-scheme: light;
@@ -136,7 +93,6 @@
   .art .stars { inset:0; width:100%; height:100%; opacity:.07; }
   @keyframes turn { to { transform:rotate(360deg) } }
   @media (prefers-reduced-motion: reduce) { .art svg { animation:none !important } }
-
 
   .wrap { max-width:1060px; margin:0 auto; position:relative; }
   .serif { font-family:"Playfair Display", Georgia, serif; }

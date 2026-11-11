@@ -323,11 +323,9 @@
   </nav>
 
   <main class="inv-wrap">
-    <!-- Founder, 15 Sep 2026 ~13:05: ONE passcode → the investor's details → two logo
-         tiles (Teatalz, Ask Ru) → a click opens that room. v3 (15 Sep evening): one
-         aligned grid, and a Build status section at the top of BOTH rooms. -->
+    
 
-    <!-- ============ 1. PASSCODE ============ -->
+    
     <section id="s-lock" class="screen" tabindex="-1" aria-labelledby="h-lock">
       <div class="card">
         <ol class="steps" aria-label="Steps">
@@ -341,16 +339,7 @@
         <h1 id="h-lock">Investor Data Room</h1>
         <p class="lede">Private area for <strong>Teatalz House Of Rume Private Limited</strong>. Enter the access code you were given.</p>
         <form id="f-lock" novalidate>
-          <!-- 🔴 SHOW THE CODE — 28 Oct 2026. The founder: *"password ki box pe
-               view password ka kar, agar galat type hue to pata he nahi
-               chalega."*
-
-               It matters more here than on an ordinary login, because a wrong
-               try is expensive: the server counts failures GLOBALLY and locks
-               EVERYONE out for an hour after thirty of them, and it answers a
-               locked request with the same words as a wrong code. Somebody who
-               cannot see what they typed can burn attempts that are not theirs
-               to burn, and never learn which problem they have. -->
+          
           <div class="inv-field inv-field--reveal">
             <label for="passcode" class="sr-only">Access code</label>
             <input id="passcode" class="inv-input" type="password" placeholder="Access code" autocomplete="off" autocapitalize="off" spellcheck="false" required />
@@ -362,7 +351,7 @@
       </div>
     </section>
 
-    <!-- ============ 2. DETAILS ============ -->
+    
     <section id="s-details" class="screen" tabindex="-1" aria-labelledby="h-details" hidden>
       <div class="card">
         <ol class="steps" aria-label="Steps">
@@ -398,7 +387,7 @@
       </div>
     </section>
 
-    <!-- ============ 3. TILES ============ -->
+    
     <section id="s-rooms" class="screen" tabindex="-1" aria-labelledby="h-rooms" hidden>
       <div class="rooms-head">
         <div class="eyebrow-s">Investor Data Room</div>
@@ -423,7 +412,7 @@
       </div>
     </section>
 
-    <!-- ============ 4a. TEATALZ ROOM (teatalz-mumbai) ============ -->
+    
     <section id="s-teatalz" class="screen" tabindex="-1" aria-labelledby="h-teatalz" hidden>
       <button class="backlink" type="button" data-back>← All rooms</button>
       <header class="roomhead">
@@ -478,7 +467,7 @@
       <div class="room-foot"><button class="backlink" type="button" data-back>← All rooms</button></div>
     </section>
 
-    <!-- ============ 4b. ASK RU ROOM (Ask Ru's own Supabase project) ============ -->
+    
     <section id="s-askru" class="screen" tabindex="-1" aria-labelledby="h-askru" hidden>
       <button class="backlink" type="button" data-back>← All rooms</button>
       <header class="roomhead">
@@ -488,16 +477,9 @@
       </header>
       <p class="room-intro">Ask Ru is a separate app from the same company, with Ru as its face. Its build status and documents are kept in Ask Ru’s own data room.</p>
 
-      <!-- 🔴 THE WAITING LIST. Founder, 29 Oct 2026: *"data room mai show kar
-           waiting ka count with name email language ki saath but email mask
-           kar diyo"*. The addresses are masked by the DATABASE, in
-           `askru_room_waitlist`, so this page never receives one whole. -->
-      <!-- 🔴 TRACTION. Counts and rupees-per-reading only: the people are in
-           the panel below, behind a different function. Two doors, so that
-           widening this one cannot widen it into a mailing list. -->
-      <!-- Held back for about an hour on 29 Oct 2026 ("deploy nahi karna hai
-           abhi"), then turned on at his word ("aur matrix bhi"). Kept as an id
-           and an attribute so the next hold is one word, not an edit. -->
+      
+      
+      
       <section class="sec" aria-labelledby="tr-a-h" id="sec-traction">
         <div class="sec-head"><h2 id="tr-a-h">Traction</h2><span class="cadence">Live</span></div>
         <p class="sec-note">Counted from Ask Ru’s own database when you opened this page. Nothing here is an estimate or a projection.</p>
@@ -531,14 +513,14 @@
 
     <div id="docmsg" class="inv-msg ok" role="status" aria-live="polite"></div>
 
-    <!-- Greeting — shown on the FIRST document a visitor opens or downloads, never on entry. -->
+    
     <div id="greeting" class="greet-scrim" hidden>
       <div class="greet-card" role="dialog" aria-modal="true" aria-labelledby="greet-h">
         <button class="greet-x" type="button" id="greet-x" aria-label="Close">×</button>
         <div class="greet-eyebrow">👋 Welcome</div>
         <h3 id="greet-h">Good to see you, <span id="greet-name"></span>.</h3>
         <p><strong>Ask Ru</strong> will be <strong>ready by November 2026</strong>. The <strong>Teatalz</strong> launch is being re-planned as funds allow. Teatalz is a solopreneur project, and I run it myself.</p>
-        <!-- Founder, 14 Sep 2026: self-investment is now over Rs 24 lakh (matches the data room docs). -->
+        
         <p>I have put <strong>over ₹24 lakh</strong> of my own into it so far.</p>
         <p>If you would like to talk, I would like to hear from
            you. <strong>Both rooms update every Tuesday</strong>, so you can watch the build either way.</p>

@@ -26,28 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<!--
-  🔴 EVERY TABLE ON THIS PAGE WAS READ FROM THE BUILD, not from the brief.
-  Verified 29 Oct 2026 against askru-push-ready, _shared/vedic/:
 
-    day choghadiya ring     muhurat.ts:42   Udveg Char Labh Amrit Kaal Shubh Rog
-    night choghadiya ring   muhurat.ts:100  Shubh Amrit Char Rog Kaal Labh Udveg
-      ⚠️ the night is its OWN ring, not the day's at an offset. Two rows —
-      Tuesday and Saturday — are marked in the source as disputed between
-      published panchangs, so this page does not print a per-weekday table.
-    which are auspicious    muhurat.ts:45   Amrit, Shubh, Labh, Char
-    Rahu Kaal / Yamaganda / Gulika — eighths of the day, muhurat.ts (RAHU_EIGHTH,
-      YAMA_EIGHTH, GULIKA_EIGHTH); all three match classical convention, checked
-      row by row against published tables on 20 Oct 2026.
-    Abhijit                 muhurat.ts:189, :202 — the 8th of 15 muhurats between
-      sunrise and sunset, and NOT given on Wednesday (`weekday === 3` → null)
-    panchang limbs          panchang.ts:85  tithi + paksha, nakshatra, yoga, karana
-    location                features/muhurat/where.ts — coarse only, and a refusal
-      falls back to the saved birth city and says which place it used
-
-  No price on this page, and no claim that the app is published.
-  The FAQ is VISIBLE and the FAQPage markup repeats only what is on the page.
--->
 <style>
 :root{
   color-scheme: dark;
@@ -196,18 +175,6 @@ rather than copied from a feed.</p>
 
 </div>
 
-<!-- 30 Oct 2026: same omission as the kundli-milan page — a FAQPage node and no
-     stated author, publisher or date, on a page whose whole job is to be found.
-
-     🔴 THE DATES ARE READ FROM GIT, NOT CHOSEN. datePublished is the commit that
-     added this file (2026-10-29), dateModified its last real change (2026-10-30).
-
-     ⚠️ AND dateModified MUST NOT BE BUMPED DAILY HERE, however tempting it looks
-     on a page with "aaj ka" in the title. This page explains how the choghadiya
-     and Rahu Kaal rings are derived; it does not print today's times, which the
-     app computes for the reader's own place. A date that moves while the words
-     stay the same is a false freshness claim, and search engines discount exactly
-     that. Edit it when the page is edited, never on a schedule. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

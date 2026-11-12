@@ -1,51 +1,23 @@
 User-agent: *
 Allow: /
-
-# ── AI answer engines ────────────────────────────────────────────────────
-# Founder, 28 Oct 2026: *"google AI mai bhi dalo details."* These crawlers are
-# how a page reaches an AI answer rather than only a search result, and each
-# one looks for its OWN name — a bare `User-agent: *` is not a decision they
-# all read the same way. Listed explicitly so the intent is on the record.
-#
-# ⚠️ This is a real choice, not a formality: it permits our words to be used
-# to ground and train answers about Ask Ru. That is exactly what is wanted
-# here, and it is the reason the page states plainly who made it and who
-# publishes it — an answer engine repeats what it is told.
-#
-# 🔴 THIS FILE EXISTS ON askru.in FROM 3 Nov 2026, AND THAT IS THE POINT.
-# The same list has been on teatalz.com since 28 Oct. On 2 Nov the Ask Ru
-# content moved to this domain and the list did not come with it, so for a day
-# the founder's instruction was in force on the domain that no longer holds the
-# pages and absent from the one that does — and askru.in/robots.txt was a 404,
-# which is not even a `User-agent: *`. Found by the QA session, 3 Nov.
-
-# Google — Gemini and AI Overviews grounding (separate from Googlebot)
 User-agent: Google-Extended
 Allow: /
-
-# OpenAI — training, and the one that fetches for ChatGPT search
 User-agent: GPTBot
 Allow: /
 User-agent: OAI-SearchBot
 Allow: /
 User-agent: ChatGPT-User
 Allow: /
-
-# Anthropic
 User-agent: ClaudeBot
 Allow: /
 User-agent: Claude-SearchBot
 Allow: /
 User-agent: anthropic-ai
 Allow: /
-
-# Perplexity
 User-agent: PerplexityBot
 Allow: /
 User-agent: Perplexity-User
 Allow: /
-
-# Apple Intelligence, Microsoft, Meta, Common Crawl
 User-agent: Applebot-Extended
 Allow: /
 User-agent: Amazonbot
@@ -54,14 +26,4 @@ User-agent: meta-externalagent
 Allow: /
 User-agent: CCBot
 Allow: /
-
-# 🔴 NO `Disallow` LINE NAMES A PRIVATE PATH, AND THAT IS DELIBERATE.
-# robots.txt is public. Writing `Disallow: /investordashboard/` here would
-# ANNOUNCE the investor room to anybody who reads this file, which is the
-# opposite of hiding it — a mistake already made once on the CodeUpVik owner
-# panel and recorded there for the same reason. The five private pages on this
-# domain (investor.html, investordashboard/, foundersden/, founderden.html,
-# paid.html) each carry their own `noindex` meta, which is what actually keeps
-# them out of an index. An absence here is not an oversight; it is the guard.
-
 Sitemap: https://askru.in/sitemap.xml

@@ -1,29 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  askru.in — 3 Nov 2026.
 
-  🔴 EVERY URL HERE CARRIES `index, follow`, CHECKED ONE BY ONE BEFORE LISTING.
-  A sitemap that submits a noindex page earns "Submitted URL marked noindex" in
-  Search Console, which is a defect found on teatalz.com/sitemap.xml the same
-  day: it still submits /askru/, /askru/kundli-milan/ and /askru/choghadiya/,
-  all three of which went noindex when the content moved here.
-
-  SO THIS FILE LISTS THREE URLS AND NOT EIGHT. The repo holds eight HTML pages;
-  five are `noindex` and stay out — investor.html, investordashboard/,
-  foundersden/, founderden.html (a redirect stub) and paid.html (the payment hop
-  page, which nobody should ever reach from a search result).
-
-  ⚠️ `lastmod` IS TAKEN FROM GIT, NOT TYPED. `git log -1 --format=%cs -- <file>`
-  for each page. A date somebody types is not a date the file was changed, and a
-  lastmod that is wrong in the optimistic direction teaches a crawler to ignore
-  the field.
-
-  ⚠️ AND /muhurat/ IS ABSENT BECAUSE IT DOES NOT EXIST. It returns 404. The
-  muhurat engine went to production on 3 Nov (v20, with the lunar-month,
-  Kharmas, Hasta and part-day-window rules) and is reachable from the app only.
-  Do not add the URL here before the page is live: a 404 in a sitemap is worse
-  than an absence, because it is a claim.
--->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://askru.in/</loc>

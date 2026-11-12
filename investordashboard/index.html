@@ -12,7 +12,7 @@
 <style>
   :root {
     color-scheme: light;
-    /* Straight from src/theme/colors.ts — the app's light theme. */
+    
     --paper:#faf1dd; --paper-alt:#f7ead0; --card:#fffbf0; --card-alt:#f5ead6;
     --ink:#3b2f47; --ink-2:#5a4d66; --ink-3:#6f6480;
     --line:#ecdfc8; --line-2:#f1e8d6;
@@ -29,10 +29,7 @@
     min-height:100vh; padding:30px 18px 84px; -webkit-font-smoothing:antialiased;
     position:relative; overflow-x:hidden;
   }
-  /* ── the background, moving slowly ──────────────────────────────────
-     Three soft washes in the brand's own accents. `fixed` and
-     `pointer-events:none` so they never interfere with the page, and the
-     whole thing stops for anyone who asked their system for less motion. */
+  
   .glow { position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none; }
   .glow i { position:absolute; display:block; border-radius:50%; filter:blur(60px); opacity:.5; }
   .glow i:nth-child(1){ width:46vw; height:46vw; left:-10vw; top:-12vw;
@@ -46,30 +43,11 @@
   @keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(4vw,-5vh)} }
   @media (prefers-reduced-motion: reduce) { .glow i { animation:none } .rise { animation:none !important; opacity:1 !important } }
 
-  /* ── the gate's own weather, and a code you can look at ──────────────────
-     30 Oct 2026. The founder: *"passcode jaha dalte hai waha view karne ka
-     option de and saath mai bg mai thoda creativity kar, ad some art work
-     images in low opacity and bg color bhi time ke saath change ho"*.
-
-     🔴 THE DATA ROOM ALREADY HAD THE REVEAL AND THESE TWO DID NOT. Its
-     button carries a comment explaining why it matters most there: a wrong
-     try raises a GLOBAL counter and thirty of them lock everyone out for an
-     hour, so somebody who cannot see what they typed burns attempts that are
-     not theirs. That reasoning is copied here rather than reinvented, down to
-     restoring the caret after the type swap. */
+  
   .pw { position:relative; margin-bottom:12px; }
-  /* 🔴 PADDED ON BOTH SIDES, NOT JUST THE RIGHT. `.gate input` is
-     text-align:center with letter-spacing, so reserving space only on the
-     right shifts the centre rather than clearing the button — measured on
-     the rendered page, the placeholder ran straight under "Show". Equal
-     padding keeps the dots centred in the space that is actually free. */
+  
   .pw input { margin-bottom:0 !important; padding-left:76px; padding-right:76px; }
-  /* 🔴 `width:auto` IS LOAD-BEARING. `.gate button { width:100% }` is
-     written for the Open button and catches every button inside the gate,
-     including this one — measured on the rendered page it came out 334px
-     wide, covering the whole field, which is why the label appeared in the
-     middle of the code. The screenshot read like a padding problem and was
-     not one. */
+  
   .pw .pw-reveal { position:absolute; right:5px; top:50%; transform:translateY(-50%);
                width:auto; min-height:40px; padding:0 13px; border:0; border-radius:10px;
                background:transparent; color:var(--plum-deep); font:inherit;
@@ -77,11 +55,7 @@
   .pw .pw-reveal:hover { background:rgba(124,92,255,.10); }
   .pw .pw-reveal:focus-visible { outline:2px solid var(--plum); outline-offset:2px; }
 
-  /* 🔴 ARTWORK, NOT IMAGE FILES. Inline SVG: nothing to fetch, nothing to
-     404, no layout shift while it loads, and it takes the time-of-day tint
-     from the same variable the background does — a bitmap could not. Kept
-     under .06 opacity so it reads as texture rather than decoration, and
-     pinned behind everything with the glow. */
+  
   .art { position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
          color:var(--art-tint, #7c5cff); }
   .art svg { position:absolute; opacity:.055; }
@@ -286,450 +260,433 @@
     <p class="foot" id="foot"></p>
   </div>
 </div>
-<script>
-(function () {
-  var URL_ = "https://hyxkhjxrpsmjztbdtcee.supabase.co";
-  var ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5eGtoanhycHNtanp0YmR0Y2VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyNjc3MTgsImV4cCI6MjEwNDg0MzcxOH0.203raeaoCf_t6nawo1IkFm-Ayc5uMti-WkxksYn3ORs";
-
-  /* 🔴 IN MEMORY, NOWHERE ELSE. */
-  var CODE = null, DATA = null, SURFACE = "website";
-  var REVIEWS = [], REV_TOTAL = 0, REV_PAGE = 5;
-
-  var PIE = ["#7c5cff", "#ff8fb4", "#c98b2a", "#5b3fc0", "#2f9e6a", "#4b63b0"];
-
-  function $(id){ return document.getElementById(id); }
-  function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-  function say(el, cls, text){ el.className = "msg" + (cls?" "+cls:""); el.textContent = text; }
-  function stamp(iso){
-    try { return new Date(iso).toLocaleString("en-IN",
-      { timeZone:"Asia/Kolkata", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" }) + " IST"; }
-    catch(e){ return ""; }
-  }
-  function dayLabel(d){
-    try { return new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day:"numeric", month:"short" }); }
-    catch(e){ return d; }
-  }
-
-  function rpc(fn, body){
-    return fetch(URL_ + "/rest/v1/rpc/" + fn, {
-      method:"POST",
-      headers:{ apikey:ANON, authorization:"Bearer "+ANON, "content-type":"application/json" },
-      body: JSON.stringify(body)
-    }).then(function(r){ return r.ok ? r.json() : null; });
-  }
-
-  /* 🔴 A ZERO IS PRINTED AS A ZERO. Only null means "no answer" — the
-     difference between "nobody has paid" and "we cannot tell you" is the
-     whole point of this page, and `!value` would collapse them. */
-  function fmt(live, surface){
-    if (!live) return { cls:"none", text:"—" };
-    var v = live[surface || SURFACE];
-    if (v === null || v === undefined) return { cls:"none", text: live.basis ? "not yet" : "—" };
-    if (live.unit === "rupees")  return { cls:"", text:"₹" + Number(v).toLocaleString("en-IN") };
-    if (live.unit === "percent") return { cls:"", text:Number(v) + "%" };
-    if (live.unit === "text")    return { cls:"small", text:String(v) };
-    return { cls:"", text:Number(v).toLocaleString("en-IN") };
-  }
-  function metric(key){ return (DATA.metrics||[]).filter(function(x){ return x.key === key; })[0]; }
-  function series(){ return (DATA.series) || {}; }
-
-  /* ════════ charts, drawn by hand so there is nothing to load ════════ */
-
-  function donut(rows, total){
-    if (!total) return "";
-    var R = 62, r = 40, cx = 76, cy = 76, a = -Math.PI/2, out = "";
-    rows.forEach(function(row, i){
-      var frac = row.n / total;
-      /* A full circle has no arc — two identical points draw nothing, so a
-         single-slice donut would vanish. Drawn as a ring instead. */
-      if (frac >= 0.9999) {
-        out += '<circle cx="'+cx+'" cy="'+cy+'" r="'+((R+r)/2)+'" fill="none" stroke="'+PIE[i%PIE.length]
-             + '" stroke-width="'+(R-r)+'"><title>'+esc(row.label)+': '+row.n+'</title></circle>';
-        return;
-      }
-      var b = a + frac * Math.PI * 2, big = (b - a) > Math.PI ? 1 : 0;
-      var p = [
-        "M", cx + R*Math.cos(a), cy + R*Math.sin(a),
-        "A", R, R, 0, big, 1, cx + R*Math.cos(b), cy + R*Math.sin(b),
-        "L", cx + r*Math.cos(b), cy + r*Math.sin(b),
-        "A", r, r, 0, big, 0, cx + r*Math.cos(a), cy + r*Math.sin(a), "Z"
-      ].join(" ");
-      out += '<path d="'+p+'" fill="'+PIE[i%PIE.length]+'" opacity=".92">'
-           + '<title>'+esc(row.label)+': '+row.n+'</title></path>';
-      a = b;
-    });
-    return '<svg viewBox="0 0 152 152" role="img" aria-label="Breakdown">' + out
-      + '<text x="76" y="72" text-anchor="middle" font-size="26" font-weight="650" fill="#3b2f47">'+total+'</text>'
-      + '<text x="76" y="90" text-anchor="middle" font-size="10" letter-spacing="1.2" fill="#6f6480">TOTAL</text>'
-      + '</svg>';
-  }
-  function legend(rows, total){
-    return '<div class="legend">' + rows.map(function(row,i){
-      return '<span><i style="background:'+PIE[i%PIE.length]+'"></i>'+esc(row.label)+' — <b>'+row.n+'</b>'
-        + (total ? ' ('+Math.round(row.n/total*100)+'%)' : '') + '</span>';
-    }).join("") + '</div>';
-  }
-
-  function area(points){
-    if (!points.length) return "";
-    var W = 420, H = 150, pad = 26;
-    var max = Math.max.apply(null, points.map(function(p){ return p.n; }));
-    if (max <= 0) max = 1;
-    var step = points.length > 1 ? (W - pad*2) / (points.length - 1) : 0;
-    var xy = points.map(function(p, i){
-      return [pad + i*step, H - pad - (p.n / max) * (H - pad*2)];
-    });
-    /* One point cannot make a line; it is drawn as a dot so a single day of
-       data does not come out as an empty chart. */
-    var line = xy.map(function(c,i){ return (i?"L":"M") + c[0].toFixed(1) + " " + c[1].toFixed(1); }).join(" ");
-    var fill = line + " L " + xy[xy.length-1][0].toFixed(1) + " " + (H-pad) + " L " + xy[0][0].toFixed(1) + " " + (H-pad) + " Z";
-    var dots = xy.map(function(c, i){
-      return '<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="4" fill="#7c5cff">'
-        + '<title>'+esc(dayLabel(points[i].day))+': '+points[i].n+'</title></circle>';
-    }).join("");
-    var ticks = points.map(function(p, i){
-      if (points.length > 6 && i % Math.ceil(points.length/5) !== 0 && i !== points.length-1) return "";
-      return '<text x="'+xy[i][0].toFixed(1)+'" y="'+(H-7)+'" text-anchor="middle" font-size="10" fill="#6f6480">'
-        + esc(dayLabel(p.day)) + '</text>';
-    }).join("");
-    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Joined per day">'
-      + '<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">'
-      + '<stop offset="0%" stop-color="#7c5cff" stop-opacity=".30"/>'
-      + '<stop offset="100%" stop-color="#7c5cff" stop-opacity="0"/></linearGradient></defs>'
-      + '<line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#ecdfc8"/>'
-      + '<text x="'+pad+'" y="18" font-size="10" fill="#6f6480">peak '+max+'</text>'
-      + (xy.length > 1 ? '<path d="'+fill+'" fill="url(#g1)"/><path d="'+line+'" fill="none" stroke="#7c5cff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' : "")
-      + dots + ticks + '</svg>';
-  }
-
-  function bars(rows){
-    var max = Math.max.apply(null, rows.map(function(r){ return r.n; }).concat([1]));
-    return '<svg viewBox="0 0 300 '+(rows.length*44+10)+'" role="img" aria-label="Money">'
-      + rows.map(function(r, i){
-          var w = Math.max(2, (r.n / max) * 190), y = i*44 + 8;
-          return '<text x="0" y="'+(y+13)+'" font-size="12" fill="#5a4d66">'+esc(r.label)+'</text>'
-            + '<rect x="0" y="'+(y+20)+'" width="'+w.toFixed(1)+'" height="14" rx="7" fill="'+(i?"#c98b2a":"#7c5cff")+'" opacity=".9"><title>'+esc(r.label)+': ₹'+r.n+'</title></rect>'
-            + '<text x="'+(w+8).toFixed(1)+'" y="'+(y+31)+'" font-size="12" font-weight="650" fill="#3b2f47">₹'+Number(r.n).toLocaleString("en-IN")+'</text>';
-        }).join("") + '</svg>';
-  }
-
-  function paintCharts(){
-    var s = series();
-    if (!s.joined_by_day) { $("charts").innerHTML = ""; return; }
-
-    var byDay = s.joined_by_day || [];
-    var byMode = (s.readings_by_mode || []).map(function(x){ return { label:x.mode, n:x.n }; });
-    var modeTotal = byMode.reduce(function(a,b){ return a + b.n; }, 0);
-    var fp = (s.free_vs_paid || {})[SURFACE] || { free:0, paid:0 };
-    var fpRows = [{label:"Free", n:fp.free||0}, {label:"Paid", n:fp.paid||0}];
-    var fpTotal = fpRows[0].n + fpRows[1].n;
-    var money = s.money || { revenue:0, cost:0 };
-
-    var cards = [];
-    cards.push('<div class="chart"><h3>Joining, day by day</h3>'
-      + '<p class="cap">Only the days that have somebody on them.</p>'
-      + (byDay.length ? area(byDay) : '<p class="none-yet">Nobody has joined yet, so there is no line to draw.</p>')
-      + '</div>');
-    cards.push('<div class="chart"><h3>What they asked for</h3>'
-      + '<p class="cap">Every reading given, by kind.</p>'
-      + (modeTotal ? donut(byMode, modeTotal) + legend(byMode, modeTotal)
-                   : '<p class="none-yet">No readings yet.</p>')
-      + '</div>');
-    cards.push('<div class="chart"><h3>Free and paid</h3>'
-      + '<p class="cap">On the surface selected below.</p>'
-      + (fpTotal ? donut(fpRows, fpTotal) + legend(fpRows, fpTotal)
-                 : '<p class="none-yet">Nobody on this surface yet.</p>')
-      + '</div>');
-    cards.push('<div class="chart"><h3>Money in, money out</h3>'
-      + '<p class="cap">Collected against what the readings cost us to serve.</p>'
-      + ((money.revenue || money.cost)
-          ? bars([{label:"Revenue collected", n:money.revenue||0},{label:"Model cost", n:money.cost||0}])
-          : '<p class="none-yet">Nothing collected and nothing spent on public readings yet.</p>')
-      + '</div>');
-
-    $("charts").innerHTML = '<section class="sec rise"><h2>At a glance</h2><div class="charts">'
-      + cards.join("") + '</div></section>';
-  }
-
-  /* ════════ heroes ════════ */
-  function paintHeroes(){
-    var want = [
-      ["executive.total_users_registered", "People"],
-      ["executive.total_sessions_completed", "Readings given"],
-      ["executive.revenue_to_date", "Revenue"],
-      ["executive.mau", "Monthly active"]
-    ];
-    var cards = [];
-    want.forEach(function(w){
-      var mt = metric(w[0]);
-      if (!mt || !mt.live) return;
-      cards.push('<div class="hero rise"><div class="n">' + esc(fmt(mt.live).text) + '</div>'
-        + '<div class="k">' + esc(w[1]) + '</div></div>');
-    });
-    var rv = (series().reviews) || {};
-    if (rv.count) {
-      cards.push('<div class="hero rise"><div class="n">' + (rv.avg_stars || "—") + '</div>'
-        + '<div class="k">Average stars</div><div class="x">' + rv.count + ' review(s)</div></div>');
+<script>(function() {
+    var URL_ = "https://hyxkhjxrpsmjztbdtcee.supabase.co";
+    var ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5eGtoanhycHNtanp0YmR0Y2VlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyNjc3MTgsImV4cCI6MjEwNDg0MzcxOH0.203raeaoCf_t6nawo1IkFm-Ayc5uMti-WkxksYn3ORs";
+    var CODE = null, DATA = null, SURFACE = "website";
+    var REVIEWS = [], REV_TOTAL = 0, REV_PAGE = 5;
+    var PIE = [ "#7c5cff", "#ff8fb4", "#c98b2a", "#5b3fc0", "#2f9e6a", "#4b63b0" ];
+    function $(id) {
+        return document.getElementById(id);
     }
-    if (DATA.days_of_data) {
-      cards.push('<div class="hero rise"><div class="n">' + esc(String(DATA.days_of_data)) + '</div>'
-        + '<div class="k">Days of data</div><div class="x">since the first public row</div></div>');
+    function esc(s) {
+        return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
-    $("heroes").innerHTML = cards.join("");
-  }
-
-  function paintNews(){
-    var list = DATA.updates || [];
-    if (!list.length) { $("news").innerHTML = ""; return; }
-    $("news").innerHTML = '<section class="sec news rise"><h2>From the founder</h2>'
-      + list.map(function(u){
-          return '<div class="upd"><h3 class="serif">' + esc(u.title) + '</h3>'
-            + '<div class="at">' + esc(stamp(u.published_at)) + '</div>'
-            + '<p>' + esc(u.body) + '</p></div>';
-        }).join("") + '</section>';
-  }
-
-  /* ════════ the table ════════ */
-  function paint(){
-    var metrics = DATA.metrics || [];
-    if (!metrics.length) {
-      $("body").innerHTML = '<section class="sec"><h2>Nothing yet</h2>'
-        + '<p style="color:var(--ink-2);margin:0">Nothing has been shared with you so far. '
-        + 'That is a setting on our side, not a fault here — ask and it can be switched on.</p></section>';
-      return;
+    function say(el, cls, text) {
+        el.className = "msg" + (cls ? " " + cls : "");
+        el.textContent = text;
     }
-
-    var bySection = [], last = null;
-    metrics.forEach(function(mt){
-      if (!last || last.name !== mt.section) { last = { name: mt.section, items: [] }; bySection.push(last); }
-      last.items.push(mt);
-    });
-
-    $("body").innerHTML = bySection.map(function(s){
-      var rows = s.items.map(function(mt){
-        var cells = "", basis = "";
-        if (mt.kind === "computed") {
-          ["website","app","total"].forEach(function(k){
-            var r = fmt(mt.live, k);
-            cells += '<td class="v ' + r.cls + (k === SURFACE ? "" : " dim") + '">' + esc(r.text) + '</td>';
-          });
-          if (mt.live && mt.live.basis && (mt.live[SURFACE] === null || mt.live[SURFACE] === undefined)) {
-            basis = '<div class="basis">' + esc(mt.live.basis) + '</div>';
-          }
-        } else if (mt.kind === "entered") {
-          cells = '<td class="v small" colspan="3">' + (mt.value ? esc(mt.value) : "—") + '</td>';
-          if (mt.as_of) basis = '<div class="basis">as at ' + esc(stamp(mt.as_of)) + '</div>';
-        } else {
-          cells = '<td class="v none" colspan="3">not measured yet</td>';
-          basis = '<div class="basis">Nothing feeds this number yet. We would rather leave it blank than publish a figure with nothing behind it.</div>';
+    function stamp(iso) {
+        try {
+            return new Date(iso).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit"
+            }) + " IST";
+        } catch (e) {
+            return "";
         }
-        return '<tr><td><div class="lbl">' + esc(mt.label) + '</div>'
-          + '<div class="sub">' + esc(mt.description || "") + (mt.purpose ? " · " + esc(mt.purpose) : "") + '</div>'
-          + basis + '</td>' + cells + '</tr>';
-      }).join("");
-      return '<section class="sec rise"><h2>' + esc(s.name) + '</h2>'
-        + '<table class="t"><thead><tr><th>Metric</th><th>Website</th><th>App</th><th>Both</th></tr></thead>'
-        + '<tbody>' + rows + '</tbody></table></section>';
-    }).join("");
-  }
-
-  /* ════════ reviews, five at a time ════════ */
-  function paintReviews(){
-    var rv = (series().reviews) || {};
-    var shown = REVIEWS.length;
-    var body;
-    if (!REV_TOTAL) {
-      body = '<p class="none-yet">No one has left a review yet. They are asked for one straight after a reading, '
-           + 'so this fills up as readings do.</p>';
-    } else {
-      body = REVIEWS.map(function(r){
-        var stars = "★★★★★".slice(0, r.stars) + "☆☆☆☆☆".slice(0, 5 - r.stars);
-        return '<div class="rev"><span class="st">' + stars + '</span>'
-          + '<span class="at">' + esc(dayLabel(r.on)) + '</span>'
-          + (r.body ? '<p>' + esc(r.body) + '</p>' : '') + '</div>';
-      }).join("");
-      if (shown < REV_TOTAL) {
-        body += '<div class="more"><button type="button" class="ghost" id="rev-more">'
-             + 'Read more — ' + (REV_TOTAL - shown) + ' left</button></div>';
-      }
     }
-    $("reviews").innerHTML = '<section class="sec rise"><h2>What people said'
-      + (REV_TOTAL ? ' — showing ' + shown + ' of ' + REV_TOTAL : '') + '</h2>' + body + '</section>';
-
-    var b = $("rev-more");
-    if (b) b.addEventListener("click", function(){
-      b.disabled = true; b.textContent = "Loading…";
-      moreReviews().then(function(){ paintReviews(); });
-    });
-  }
-
-  function moreReviews(){
-    return rpc("askru_investor_reviews", { code: CODE, p_offset: REVIEWS.length, p_limit: REV_PAGE })
-      .then(function(d){
-        if (!d || d.ok !== true) return;
-        REV_TOTAL = d.total || 0;
-        REVIEWS = REVIEWS.concat(d.reviews || []);
-      })
-      .catch(function(){ /* a page of reviews is not worth an error banner */ });
-  }
-
-  Array.prototype.forEach.call($("surf").querySelectorAll("button"), function(b){
-    b.addEventListener("click", function(){
-      SURFACE = b.dataset.surface;
-      Array.prototype.forEach.call($("surf").querySelectorAll("button"), function(x){
-        x.setAttribute("aria-pressed", String(x === b));
-      });
-      paintHeroes(); paintCharts(); paint();
-    });
-  });
-
-  function load(code){
-    return rpc("askru_investor_dashboard", { code: code }).then(function(d){
-      if (!d || d.ok !== true) return d;
-      DATA = d; CODE = code;
-      $("gate").hidden = true; $("panel").hidden = false;
-      var inv = d.investor || {};
-      $("hello").textContent = inv.name ? (inv.name + (inv.firm ? " · " + inv.firm : "")) : "";
-      $("when").textContent = d.as_of ? ("Counted " + stamp(d.as_of)) : "";
-      $("foot").innerHTML =
-        "Counted from Ask Ru’s own database the moment this page asked — nothing here is stored, estimated or projected. "
-        + (d.days_of_data ? (d.days_of_data + " day(s) of public data so far. ") : "")
-        + "Figures that cannot exist yet say so rather than showing a zero."
-        + (d.contact ? '<br>Questions: <a href="mailto:' + esc(d.contact) + '">' + esc(d.contact) + '</a>' : '');
-      paintHeroes(); paintNews(); paintCharts(); paint();
-      REVIEWS = []; REV_TOTAL = 0;
-      return moreReviews().then(function(){ paintReviews(); return d; });
-    });
-  }
-
-  $("f-gate").addEventListener("submit", function(e){
-    e.preventDefault();
-    var v = $("code").value.trim(), m = $("gatemsg");
-    if (!v) { say(m,"err","Enter your code."); return; }
-    say(m,"","Opening…"); $("go").disabled = true;
-    load(v).then(function(d){
-      $("go").disabled = false; $("code").value = "";
-      if (!d || d.ok !== true) {
-        /* 🔴 ONE MESSAGE FOR A WRONG HANDLE AND A WRONG SECRET, because the
-           server deliberately gives one answer for both — telling them apart
-           here would hand back exactly what the server refused to reveal. */
-        say(m,"err", d && d.reason === "locked"
-          ? "Too many wrong codes in the last hour. It opens again by itself."
-          : "That code didn’t work.");
-      } else { say(m,"",""); }
-    }).catch(function(){ $("go").disabled = false; say(m,"err","Could not reach the database."); });
-  });
-
-  $("refresh").addEventListener("click", function(){
-    if (!CODE) return;
-    var b = $("refresh"); b.textContent = "Refreshing…"; b.disabled = true;
-    load(CODE).then(function(){ b.textContent = "Refresh"; b.disabled = false; })
-              .catch(function(){ b.textContent = "Refresh"; b.disabled = false; });
-  });
-}());
-</script>
-<script>
-/* ── the gate's weather and a code you can look at ─────────────────────────
-   30 October 2026.
-
-   TWO INDEPENDENT THINGS, both asked for by the founder.
-
-   1. THE REVEAL. Lifted from the data room's `#b-reveal`, including the part
-      that is easy to miss: the caret position is saved and restored across
-      the type swap, so revealing halfway through typing does not throw the
-      cursor to the end. It also re-hides on submit — a code left visible on
-      a screen somebody is sharing is the whole risk this control carries,
-      and nobody remembers to put it back.
-
-   2. THE TIME OF DAY. 🔴 IT STAYS LIGHT AT EVERY HOUR. The app is required
-      to stay light, so this is not a day/night switch — every stop below is
-      a cream, and what moves is only its warmth: cool before dawn, rose at
-      dawn, plain at midday, amber through the afternoon, rose again at dusk.
-      The colour is interpolated between the two surrounding stops from the
-      actual hour and minute, so it is genuinely different at 10:30 and at
-      14:00 rather than snapping between four presets. The artwork takes its
-      tint from the same pair, so the two can never disagree.
-
-   ⚠️ `--paper` and `--paper-alt` are the only things written. Everything on
-   these pages derives from them, so nothing else has to know the time. */
-(function () {
-  var $ = function (id) { return document.getElementById(id); };
-
-  /* ---- 1. show / hide the code ---------------------------------------- */
-  (function () {
-    var inp = $("code"); if (!inp) return;
-    var wrap = document.createElement("div");
-    wrap.className = "pw";
-    inp.parentNode.insertBefore(wrap, inp);
-    wrap.appendChild(inp);
-    var btn = document.createElement("button");
-    btn.type = "button"; btn.className = "pw-reveal";
-    btn.id = "pw-reveal"; btn.textContent = "Show";
-    btn.setAttribute("aria-pressed", "false");
-    btn.setAttribute("aria-label", "Show the code");
-    btn.title = "Show the code";
-    wrap.appendChild(btn);
-
-    function setShown(on) {
-      var at = inp.selectionStart;
-      inp.type = on ? "text" : "password";
-      btn.textContent = on ? "Hide" : "Show";
-      btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.setAttribute("aria-label", on ? "Hide the code" : "Show the code");
-      btn.title = btn.getAttribute("aria-label");
-      try { inp.setSelectionRange(at, at); } catch (e) {}
+    function dayLabel(d) {
+        try {
+            return new Date(d + "T00:00:00").toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short"
+            });
+        } catch (e) {
+            return d;
+        }
     }
-    btn.addEventListener("click", function () { setShown(inp.type === "password"); inp.focus(); });
-    var form = $("f-gate");
-    /* Hidden again on every attempt, right or wrong. */
-    if (form) form.addEventListener("submit", function () { setShown(false); });
-  })();
-
-  /* ---- 2. the hour's colour ------------------------------------------- */
-  /* hour, paper, paper-alt, artwork tint. All light; only the warmth moves. */
-  var STOPS = [
-    [0,    [246,239,228], [239,230,214], [110,100,160]],  /* small hours — cool  */
-    [5.5,  [253,240,228], [249,230,214], [168,110,140]],  /* dawn — rose         */
-    [9,    [253,245,228], [248,237,211], [150,118,80]],   /* morning             */
-    [13,   [250,241,221], [247,234,208], [124,92,255]],   /* midday — the theme  */
-    [17,   [252,240,216], [247,230,200], [176,124,48]],   /* afternoon — amber   */
-    [19.5, [249,236,223], [242,224,210], [172,104,128]],  /* dusk — rose again   */
-    [22,   [247,234,223], [239,227,212], [128,104,170]],  /* evening             */
-    [24,   [246,239,228], [239,230,214], [110,100,160]]   /* wraps to the first  */
-  ];
-
-  function mix(a, b, t) {
-    return "rgb(" + [0,1,2].map(function (i) {
-      return Math.round(a[i] + (b[i] - a[i]) * t);
-    }).join(",") + ")";
-  }
-
-  function paint() {
-    var d = new Date();
-    var h = d.getHours() + d.getMinutes() / 60;
-    var i = 0;
-    while (i < STOPS.length - 2 && h >= STOPS[i + 1][0]) i++;
-    var from = STOPS[i], to = STOPS[i + 1];
-    var span = to[0] - from[0];
-    var t = span > 0 ? (h - from[0]) / span : 0;
-    if (t < 0) t = 0; if (t > 1) t = 1;
-    var r = document.documentElement.style;
-    r.setProperty("--paper", mix(from[1], to[1], t));
-    r.setProperty("--paper-alt", mix(from[2], to[2], t));
-    r.setProperty("--art-tint", mix(from[3], to[3], t));
-  }
-
-  paint();
-  /* Every ten minutes: enough that a long session drifts with the afternoon,
-     rare enough to cost nothing. */
-  setInterval(paint, 600000);
-  /* And on return, because a backgrounded tab's timers are throttled and the
-     colour would otherwise be stale by hours. */
-  document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) paint();
-  });
-})();
-</script>
+    function rpc(fn, body) {
+        return fetch(URL_ + "/rest/v1/rpc/" + fn, {
+            method: "POST",
+            headers: {
+                apikey: ANON,
+                authorization: "Bearer " + ANON,
+                "content-type": "application/json"
+            },
+            body: JSON.stringify(body)
+        }).then(function(r) {
+            return r.ok ? r.json() : null;
+        });
+    }
+    function fmt(live, surface) {
+        if (!live) return {
+            cls: "none",
+            text: "—"
+        };
+        var v = live[surface || SURFACE];
+        if (v === null || v === undefined) return {
+            cls: "none",
+            text: live.basis ? "not yet" : "—"
+        };
+        if (live.unit === "rupees") return {
+            cls: "",
+            text: "₹" + Number(v).toLocaleString("en-IN")
+        };
+        if (live.unit === "percent") return {
+            cls: "",
+            text: Number(v) + "%"
+        };
+        if (live.unit === "text") return {
+            cls: "small",
+            text: String(v)
+        };
+        return {
+            cls: "",
+            text: Number(v).toLocaleString("en-IN")
+        };
+    }
+    function metric(key) {
+        return (DATA.metrics || []).filter(function(x) {
+            return x.key === key;
+        })[0];
+    }
+    function series() {
+        return DATA.series || {};
+    }
+    function donut(rows, total) {
+        if (!total) return "";
+        var R = 62, r = 40, cx = 76, cy = 76, a = -Math.PI / 2, out = "";
+        rows.forEach(function(row, i) {
+            var frac = row.n / total;
+            if (frac >= .9999) {
+                out += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (R + r) / 2 + '" fill="none" stroke="' + PIE[i % PIE.length] + '" stroke-width="' + (R - r) + '"><title>' + esc(row.label) + ": " + row.n + "</title></circle>";
+                return;
+            }
+            var b = a + frac * Math.PI * 2, big = b - a > Math.PI ? 1 : 0;
+            var p = [ "M", cx + R * Math.cos(a), cy + R * Math.sin(a), "A", R, R, 0, big, 1, cx + R * Math.cos(b), cy + R * Math.sin(b), "L", cx + r * Math.cos(b), cy + r * Math.sin(b), "A", r, r, 0, big, 0, cx + r * Math.cos(a), cy + r * Math.sin(a), "Z" ].join(" ");
+            out += '<path d="' + p + '" fill="' + PIE[i % PIE.length] + '" opacity=".92">' + "<title>" + esc(row.label) + ": " + row.n + "</title></path>";
+            a = b;
+        });
+        return '<svg viewBox="0 0 152 152" role="img" aria-label="Breakdown">' + out + '<text x="76" y="72" text-anchor="middle" font-size="26" font-weight="650" fill="#3b2f47">' + total + "</text>" + '<text x="76" y="90" text-anchor="middle" font-size="10" letter-spacing="1.2" fill="#6f6480">TOTAL</text>' + "</svg>";
+    }
+    function legend(rows, total) {
+        return '<div class="legend">' + rows.map(function(row, i) {
+            return '<span><i style="background:' + PIE[i % PIE.length] + '"></i>' + esc(row.label) + " — <b>" + row.n + "</b>" + (total ? " (" + Math.round(row.n / total * 100) + "%)" : "") + "</span>";
+        }).join("") + "</div>";
+    }
+    function area(points) {
+        if (!points.length) return "";
+        var W = 420, H = 150, pad = 26;
+        var max = Math.max.apply(null, points.map(function(p) {
+            return p.n;
+        }));
+        if (max <= 0) max = 1;
+        var step = points.length > 1 ? (W - pad * 2) / (points.length - 1) : 0;
+        var xy = points.map(function(p, i) {
+            return [ pad + i * step, H - pad - p.n / max * (H - pad * 2) ];
+        });
+        var line = xy.map(function(c, i) {
+            return (i ? "L" : "M") + c[0].toFixed(1) + " " + c[1].toFixed(1);
+        }).join(" ");
+        var fill = line + " L " + xy[xy.length - 1][0].toFixed(1) + " " + (H - pad) + " L " + xy[0][0].toFixed(1) + " " + (H - pad) + " Z";
+        var dots = xy.map(function(c, i) {
+            return '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="4" fill="#7c5cff">' + "<title>" + esc(dayLabel(points[i].day)) + ": " + points[i].n + "</title></circle>";
+        }).join("");
+        var ticks = points.map(function(p, i) {
+            if (points.length > 6 && i % Math.ceil(points.length / 5) !== 0 && i !== points.length - 1) return "";
+            return '<text x="' + xy[i][0].toFixed(1) + '" y="' + (H - 7) + '" text-anchor="middle" font-size="10" fill="#6f6480">' + esc(dayLabel(p.day)) + "</text>";
+        }).join("");
+        return '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Joined per day">' + '<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">' + '<stop offset="0%" stop-color="#7c5cff" stop-opacity=".30"/>' + '<stop offset="100%" stop-color="#7c5cff" stop-opacity="0"/></linearGradient></defs>' + '<line x1="' + pad + '" y1="' + (H - pad) + '" x2="' + (W - pad) + '" y2="' + (H - pad) + '" stroke="#ecdfc8"/>' + '<text x="' + pad + '" y="18" font-size="10" fill="#6f6480">peak ' + max + "</text>" + (xy.length > 1 ? '<path d="' + fill + '" fill="url(#g1)"/><path d="' + line + '" fill="none" stroke="#7c5cff" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>' : "") + dots + ticks + "</svg>";
+    }
+    function bars(rows) {
+        var max = Math.max.apply(null, rows.map(function(r) {
+            return r.n;
+        }).concat([ 1 ]));
+        return '<svg viewBox="0 0 300 ' + (rows.length * 44 + 10) + '" role="img" aria-label="Money">' + rows.map(function(r, i) {
+            var w = Math.max(2, r.n / max * 190), y = i * 44 + 8;
+            return '<text x="0" y="' + (y + 13) + '" font-size="12" fill="#5a4d66">' + esc(r.label) + "</text>" + '<rect x="0" y="' + (y + 20) + '" width="' + w.toFixed(1) + '" height="14" rx="7" fill="' + (i ? "#c98b2a" : "#7c5cff") + '" opacity=".9"><title>' + esc(r.label) + ": ₹" + r.n + "</title></rect>" + '<text x="' + (w + 8).toFixed(1) + '" y="' + (y + 31) + '" font-size="12" font-weight="650" fill="#3b2f47">₹' + Number(r.n).toLocaleString("en-IN") + "</text>";
+        }).join("") + "</svg>";
+    }
+    function paintCharts() {
+        var s = series();
+        if (!s.joined_by_day) {
+            $("charts").innerHTML = "";
+            return;
+        }
+        var byDay = s.joined_by_day || [];
+        var byMode = (s.readings_by_mode || []).map(function(x) {
+            return {
+                label: x.mode,
+                n: x.n
+            };
+        });
+        var modeTotal = byMode.reduce(function(a, b) {
+            return a + b.n;
+        }, 0);
+        var fp = (s.free_vs_paid || {})[SURFACE] || {
+            free: 0,
+            paid: 0
+        };
+        var fpRows = [ {
+            label: "Free",
+            n: fp.free || 0
+        }, {
+            label: "Paid",
+            n: fp.paid || 0
+        } ];
+        var fpTotal = fpRows[0].n + fpRows[1].n;
+        var money = s.money || {
+            revenue: 0,
+            cost: 0
+        };
+        var cards = [];
+        cards.push('<div class="chart"><h3>Joining, day by day</h3>' + '<p class="cap">Only the days that have somebody on them.</p>' + (byDay.length ? area(byDay) : '<p class="none-yet">Nobody has joined yet, so there is no line to draw.</p>') + "</div>");
+        cards.push('<div class="chart"><h3>What they asked for</h3>' + '<p class="cap">Every reading given, by kind.</p>' + (modeTotal ? donut(byMode, modeTotal) + legend(byMode, modeTotal) : '<p class="none-yet">No readings yet.</p>') + "</div>");
+        cards.push('<div class="chart"><h3>Free and paid</h3>' + '<p class="cap">On the surface selected below.</p>' + (fpTotal ? donut(fpRows, fpTotal) + legend(fpRows, fpTotal) : '<p class="none-yet">Nobody on this surface yet.</p>') + "</div>");
+        cards.push('<div class="chart"><h3>Money in, money out</h3>' + '<p class="cap">Collected against what the readings cost us to serve.</p>' + (money.revenue || money.cost ? bars([ {
+            label: "Revenue collected",
+            n: money.revenue || 0
+        }, {
+            label: "Model cost",
+            n: money.cost || 0
+        } ]) : '<p class="none-yet">Nothing collected and nothing spent on public readings yet.</p>') + "</div>");
+        $("charts").innerHTML = '<section class="sec rise"><h2>At a glance</h2><div class="charts">' + cards.join("") + "</div></section>";
+    }
+    function paintHeroes() {
+        var want = [ [ "executive.total_users_registered", "People" ], [ "executive.total_sessions_completed", "Readings given" ], [ "executive.revenue_to_date", "Revenue" ], [ "executive.mau", "Monthly active" ] ];
+        var cards = [];
+        want.forEach(function(w) {
+            var mt = metric(w[0]);
+            if (!mt || !mt.live) return;
+            cards.push('<div class="hero rise"><div class="n">' + esc(fmt(mt.live).text) + "</div>" + '<div class="k">' + esc(w[1]) + "</div></div>");
+        });
+        var rv = series().reviews || {};
+        if (rv.count) {
+            cards.push('<div class="hero rise"><div class="n">' + (rv.avg_stars || "—") + "</div>" + '<div class="k">Average stars</div><div class="x">' + rv.count + " review(s)</div></div>");
+        }
+        if (DATA.days_of_data) {
+            cards.push('<div class="hero rise"><div class="n">' + esc(String(DATA.days_of_data)) + "</div>" + '<div class="k">Days of data</div><div class="x">since the first public row</div></div>');
+        }
+        $("heroes").innerHTML = cards.join("");
+    }
+    function paintNews() {
+        var list = DATA.updates || [];
+        if (!list.length) {
+            $("news").innerHTML = "";
+            return;
+        }
+        $("news").innerHTML = '<section class="sec news rise"><h2>From the founder</h2>' + list.map(function(u) {
+            return '<div class="upd"><h3 class="serif">' + esc(u.title) + "</h3>" + '<div class="at">' + esc(stamp(u.published_at)) + "</div>" + "<p>" + esc(u.body) + "</p></div>";
+        }).join("") + "</section>";
+    }
+    function paint() {
+        var metrics = DATA.metrics || [];
+        if (!metrics.length) {
+            $("body").innerHTML = '<section class="sec"><h2>Nothing yet</h2>' + '<p style="color:var(--ink-2);margin:0">Nothing has been shared with you so far. ' + "That is a setting on our side, not a fault here — ask and it can be switched on.</p></section>";
+            return;
+        }
+        var bySection = [], last = null;
+        metrics.forEach(function(mt) {
+            if (!last || last.name !== mt.section) {
+                last = {
+                    name: mt.section,
+                    items: []
+                };
+                bySection.push(last);
+            }
+            last.items.push(mt);
+        });
+        $("body").innerHTML = bySection.map(function(s) {
+            var rows = s.items.map(function(mt) {
+                var cells = "", basis = "";
+                if (mt.kind === "computed") {
+                    [ "website", "app", "total" ].forEach(function(k) {
+                        var r = fmt(mt.live, k);
+                        cells += '<td class="v ' + r.cls + (k === SURFACE ? "" : " dim") + '">' + esc(r.text) + "</td>";
+                    });
+                    if (mt.live && mt.live.basis && (mt.live[SURFACE] === null || mt.live[SURFACE] === undefined)) {
+                        basis = '<div class="basis">' + esc(mt.live.basis) + "</div>";
+                    }
+                } else if (mt.kind === "entered") {
+                    cells = '<td class="v small" colspan="3">' + (mt.value ? esc(mt.value) : "—") + "</td>";
+                    if (mt.as_of) basis = '<div class="basis">as at ' + esc(stamp(mt.as_of)) + "</div>";
+                } else {
+                    cells = '<td class="v none" colspan="3">not measured yet</td>';
+                    basis = '<div class="basis">Nothing feeds this number yet. We would rather leave it blank than publish a figure with nothing behind it.</div>';
+                }
+                return '<tr><td><div class="lbl">' + esc(mt.label) + "</div>" + '<div class="sub">' + esc(mt.description || "") + (mt.purpose ? " · " + esc(mt.purpose) : "") + "</div>" + basis + "</td>" + cells + "</tr>";
+            }).join("");
+            return '<section class="sec rise"><h2>' + esc(s.name) + "</h2>" + '<table class="t"><thead><tr><th>Metric</th><th>Website</th><th>App</th><th>Both</th></tr></thead>' + "<tbody>" + rows + "</tbody></table></section>";
+        }).join("");
+    }
+    function paintReviews() {
+        var rv = series().reviews || {};
+        var shown = REVIEWS.length;
+        var body;
+        if (!REV_TOTAL) {
+            body = '<p class="none-yet">No one has left a review yet. They are asked for one straight after a reading, ' + "so this fills up as readings do.</p>";
+        } else {
+            body = REVIEWS.map(function(r) {
+                var stars = "★★★★★".slice(0, r.stars) + "☆☆☆☆☆".slice(0, 5 - r.stars);
+                return '<div class="rev"><span class="st">' + stars + "</span>" + '<span class="at">' + esc(dayLabel(r.on)) + "</span>" + (r.body ? "<p>" + esc(r.body) + "</p>" : "") + "</div>";
+            }).join("");
+            if (shown < REV_TOTAL) {
+                body += '<div class="more"><button type="button" class="ghost" id="rev-more">' + "Read more — " + (REV_TOTAL - shown) + " left</button></div>";
+            }
+        }
+        $("reviews").innerHTML = '<section class="sec rise"><h2>What people said' + (REV_TOTAL ? " — showing " + shown + " of " + REV_TOTAL : "") + "</h2>" + body + "</section>";
+        var b = $("rev-more");
+        if (b) b.addEventListener("click", function() {
+            b.disabled = true;
+            b.textContent = "Loading…";
+            moreReviews().then(function() {
+                paintReviews();
+            });
+        });
+    }
+    function moreReviews() {
+        return rpc("askru_investor_reviews", {
+            code: CODE,
+            p_offset: REVIEWS.length,
+            p_limit: REV_PAGE
+        }).then(function(d) {
+            if (!d || d.ok !== true) return;
+            REV_TOTAL = d.total || 0;
+            REVIEWS = REVIEWS.concat(d.reviews || []);
+        }).catch(function() {});
+    }
+    Array.prototype.forEach.call($("surf").querySelectorAll("button"), function(b) {
+        b.addEventListener("click", function() {
+            SURFACE = b.dataset.surface;
+            Array.prototype.forEach.call($("surf").querySelectorAll("button"), function(x) {
+                x.setAttribute("aria-pressed", String(x === b));
+            });
+            paintHeroes();
+            paintCharts();
+            paint();
+        });
+    });
+    function load(code) {
+        return rpc("askru_investor_dashboard", {
+            code: code
+        }).then(function(d) {
+            if (!d || d.ok !== true) return d;
+            DATA = d;
+            CODE = code;
+            $("gate").hidden = true;
+            $("panel").hidden = false;
+            var inv = d.investor || {};
+            $("hello").textContent = inv.name ? inv.name + (inv.firm ? " · " + inv.firm : "") : "";
+            $("when").textContent = d.as_of ? "Counted " + stamp(d.as_of) : "";
+            $("foot").innerHTML = "Counted from Ask Ru’s own database the moment this page asked — nothing here is stored, estimated or projected. " + (d.days_of_data ? d.days_of_data + " day(s) of public data so far. " : "") + "Figures that cannot exist yet say so rather than showing a zero." + (d.contact ? '<br>Questions: <a href="mailto:' + esc(d.contact) + '">' + esc(d.contact) + "</a>" : "");
+            paintHeroes();
+            paintNews();
+            paintCharts();
+            paint();
+            REVIEWS = [];
+            REV_TOTAL = 0;
+            return moreReviews().then(function() {
+                paintReviews();
+                return d;
+            });
+        });
+    }
+    $("f-gate").addEventListener("submit", function(e) {
+        e.preventDefault();
+        var v = $("code").value.trim(), m = $("gatemsg");
+        if (!v) {
+            say(m, "err", "Enter your code.");
+            return;
+        }
+        say(m, "", "Opening…");
+        $("go").disabled = true;
+        load(v).then(function(d) {
+            $("go").disabled = false;
+            $("code").value = "";
+            if (!d || d.ok !== true) {
+                say(m, "err", d && d.reason === "locked" ? "Too many wrong codes in the last hour. It opens again by itself." : "That code didn’t work.");
+            } else {
+                say(m, "", "");
+            }
+        }).catch(function() {
+            $("go").disabled = false;
+            say(m, "err", "Could not reach the database.");
+        });
+    });
+    $("refresh").addEventListener("click", function() {
+        if (!CODE) return;
+        var b = $("refresh");
+        b.textContent = "Refreshing…";
+        b.disabled = true;
+        load(CODE).then(function() {
+            b.textContent = "Refresh";
+            b.disabled = false;
+        }).catch(function() {
+            b.textContent = "Refresh";
+            b.disabled = false;
+        });
+    });
+})();</script>
+<script>(function() {
+    var $ = function(id) {
+        return document.getElementById(id);
+    };
+    (function() {
+        var inp = $("code");
+        if (!inp) return;
+        var wrap = document.createElement("div");
+        wrap.className = "pw";
+        inp.parentNode.insertBefore(wrap, inp);
+        wrap.appendChild(inp);
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "pw-reveal";
+        btn.id = "pw-reveal";
+        btn.textContent = "Show";
+        btn.setAttribute("aria-pressed", "false");
+        btn.setAttribute("aria-label", "Show the code");
+        btn.title = "Show the code";
+        wrap.appendChild(btn);
+        function setShown(on) {
+            var at = inp.selectionStart;
+            inp.type = on ? "text" : "password";
+            btn.textContent = on ? "Hide" : "Show";
+            btn.setAttribute("aria-pressed", on ? "true" : "false");
+            btn.setAttribute("aria-label", on ? "Hide the code" : "Show the code");
+            btn.title = btn.getAttribute("aria-label");
+            try {
+                inp.setSelectionRange(at, at);
+            } catch (e) {}
+        }
+        btn.addEventListener("click", function() {
+            setShown(inp.type === "password");
+            inp.focus();
+        });
+        var form = $("f-gate");
+        if (form) form.addEventListener("submit", function() {
+            setShown(false);
+        });
+    })();
+    var STOPS = [ [ 0, [ 246, 239, 228 ], [ 239, 230, 214 ], [ 110, 100, 160 ] ], [ 5.5, [ 253, 240, 228 ], [ 249, 230, 214 ], [ 168, 110, 140 ] ], [ 9, [ 253, 245, 228 ], [ 248, 237, 211 ], [ 150, 118, 80 ] ], [ 13, [ 250, 241, 221 ], [ 247, 234, 208 ], [ 124, 92, 255 ] ], [ 17, [ 252, 240, 216 ], [ 247, 230, 200 ], [ 176, 124, 48 ] ], [ 19.5, [ 249, 236, 223 ], [ 242, 224, 210 ], [ 172, 104, 128 ] ], [ 22, [ 247, 234, 223 ], [ 239, 227, 212 ], [ 128, 104, 170 ] ], [ 24, [ 246, 239, 228 ], [ 239, 230, 214 ], [ 110, 100, 160 ] ] ];
+    function mix(a, b, t) {
+        return "rgb(" + [ 0, 1, 2 ].map(function(i) {
+            return Math.round(a[i] + (b[i] - a[i]) * t);
+        }).join(",") + ")";
+    }
+    function paint() {
+        var d = new Date;
+        var h = d.getHours() + d.getMinutes() / 60;
+        var i = 0;
+        while (i < STOPS.length - 2 && h >= STOPS[i + 1][0]) i++;
+        var from = STOPS[i], to = STOPS[i + 1];
+        var span = to[0] - from[0];
+        var t = span > 0 ? (h - from[0]) / span : 0;
+        if (t < 0) t = 0;
+        if (t > 1) t = 1;
+        var r = document.documentElement.style;
+        r.setProperty("--paper", mix(from[1], to[1], t));
+        r.setProperty("--paper-alt", mix(from[2], to[2], t));
+        r.setProperty("--art-tint", mix(from[3], to[3], t));
+    }
+    paint();
+    setInterval(paint, 6e5);
+    document.addEventListener("visibilitychange", function() {
+        if (!document.hidden) paint();
+    });
+})();</script>
 </body>
 </html>

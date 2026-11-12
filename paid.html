@@ -32,7 +32,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* The 16px gutter the rest of the site keeps. */
+    
     padding: 24px 16px;
   }
   .card {
@@ -59,9 +59,7 @@
     font-weight: 600;
     text-decoration: none;
   }
-  /* Shown only once the automatic hop has plainly not happened. Offering it
-     immediately would tell somebody to press a button that is about to be
-     pressed for them. */
+  
   #late { display: none; }
 </style>
 </head>
@@ -79,22 +77,15 @@
         the app.</p>
     </div>
   </main>
-<script>
-  /* The hop. `replace` rather than `assign` so the back button does not land
-     on a page that immediately leaves again. */
-  (function () {
-    var HOME = 'teatalz://wallet';
-    try { window.location.replace(HOME); } catch (e) { /* scheme refused */ }
-
-    /* 🔴 AND A WAY OUT IF IT DID NOT WORK. A browser that blocks the scheme
-       does it silently — no error, no event — so the only honest signal is
-       that we are still here. Two and a half seconds is long enough that an
-       app which did open has already taken the foreground. */
-    setTimeout(function () {
-      var late = document.getElementById('late');
-      if (late) late.style.display = 'block';
+<script>(function() {
+    var HOME = "teatalz://wallet";
+    try {
+        window.location.replace(HOME);
+    } catch (e) {}
+    setTimeout(function() {
+        var late = document.getElementById("late");
+        if (late) late.style.display = "block";
     }, 2500);
-  }());
-</script>
+})();</script>
 </body>
 </html>

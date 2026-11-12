@@ -24,9 +24,9 @@ fbq('track', 'PageView');
 src="https://www.facebook.com/tr?id=3933602676781012&ev=PageView&noscript=1"
 /></noscript>
 <title>Ask Ru — Kundli, Tarot and Oracle readings, in plain words</title>
-<meta name="description" content="Ask Ru reads your kundli, your cards and the question under your question — Vedic, Tarot and Oracle, in plain English or Hinglish.">
+<meta name="description" content="Ask Ru reads your kundli, your cards and the question under your question — six ways to ask: Vedic, Tarot, Oracle, Kundli Milan, Muhurat and Prashna, in plain English or Hinglish.">
 <meta property="og:title" content="Ask Ru — Kundli, Tarot and Oracle readings, in plain words">
-<meta property="og:description" content="Vedic, Tarot and Oracle — read in plain words, by Ru. A product of Teatalz House of Rume, created by CodeUpVik.">
+<meta property="og:description" content="Six ways to ask — Vedic, Tarot, Oracle, Kundli Milan, Muhurat and Prashna — read in plain words, by Ru. A product of Teatalz House of Rume, created by CodeUpVik.">
 <meta property="og:image" content="https://askru.in/assets/askru-15s-poster.jpg">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="720">
@@ -567,6 +567,23 @@ h2 {
   color: var(--ink-muted); font-size: 14.5px; line-height: 1.55;
 }
 .try-perk strong { color: var(--gold); font-weight: 700; }
+.try-unlock { margin: 4px 0 14px; font-size: 14.5px; line-height: 1.55; color: var(--ink-muted); }
+.try-unlock strong { color: var(--ink); font-weight: 700; }
+/* A glimpse of the app. The app is cream by day and plum by night, and this band does the same. */
+.glimpse { padding: 62px 0; }
+.glimpse .more { margin-top: 6px; }
+.faiths { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 0 0 18px; }
+.faith { min-width: 96px; padding: 12px 14px; border-radius: 16px; text-align: center; background: var(--card); border: 1px solid var(--line); }
+.faith b { display: block; font-size: 26px; line-height: 1.1; color: var(--ink); }
+.faith span { display: block; font-size: 13.5px; color: var(--ink-muted); margin-top: 3px; }
+.belief-note { max-width: 46em; margin: 0 auto; text-align: center; font-size: 16px; line-height: 1.65; color: var(--ink-muted); }
+:root[data-sky="dawn"] .glimpse, :root[data-sky="day"] .glimpse {
+  --card: #FFFAF0; --ink: #3A1F3A; --ink-muted: #5E4560; --ink-faint: #7C6170; --line: #E8CFC4;
+  background: linear-gradient(160deg, #FCF3DF 0%, #F6E7C8 55%, #F1DBB0 100%);
+}
+:root[data-sky="dawn"] .glimpse h2, :root[data-sky="day"] .glimpse h2,
+:root[data-sky="dawn"] .glimpse h3, :root[data-sky="day"] .glimpse h3 { color: #6B2C5E; }
+
 
 
 .try-ritual { margin-top: 18px; padding-top: 16px; text-align: center;
@@ -859,7 +876,7 @@ a { color: var(--plum-deep); }
   "inLanguage": ["en-IN", "hi-IN"],
   "contentRating": "14+",
   "image": "https://askru.in/assets/askru-15s-poster.jpg",
-  "description": "Ask Ru reads your real birth chart, the tarot cards you pick yourself from all 78, or a single oracle card — and answers in plain English or Hinglish. Vedic, Tarot and Oracle, one question at a time.",
+  "description": "Ask Ru reads your real birth chart, the tarot cards you pick yourself from all 78, or a single oracle card — and answers in plain English or Hinglish. Six ways to ask: Vedic, Tarot, Oracle, Kundli Milan, Muhurat and Prashna, one question at a time.",
   "featureList": [
     "Vedic: Lagna, Rasi, D9 and D10, with Vimshottari periods and today's transits on your own chart",
     "Tarot: you shuffle and you pick, from all 78 cards — one card, or a five-card spread",
@@ -1017,7 +1034,7 @@ a { color: var(--plum-deep); }
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <p class="eyebrow enter enter-1">Vedic · Tarot · Oracle</p>
+        <p class="eyebrow enter enter-1">Vedic · Tarot · Oracle · Kundli Milan · Muhurat · Prashna</p>
         <h1 class="enter enter-2">
           Ru.
           <span class="sub">She reads your chart, your cards, and the question under the question you asked.</span>
@@ -1068,6 +1085,7 @@ a { color: var(--plum-deep); }
             <option value="hinglish">Hinglish</option>
           </select>
         </div>
+        <p class="try-unlock"><strong>What joining unlocks:</strong> one free reading right here — Vedic, Tarot or Oracle — a place among the first 1,000 who read free, and a free reading every week for your first three months in the app.</p>
         <button class="btn btn-primary" type="submit" id="try-join-go">Join the list &amp; read me</button>
         <p class="wl-msg" id="try-join-msg" role="status" aria-live="polite"></p>
 
@@ -1241,7 +1259,7 @@ a { color: var(--plum-deep); }
 
       
       <p class="try-seats reveal" id="try-seats">
-        <span>The first 1,000 on the list read free. After that a reading is ₹31 — and from launch, everyone in the first 10,000 gets one free reading a week.</span>
+        <span>The first 1,000 on the list read free. After that a reading is ₹31, the inaugural price until the app launches — and from launch, everyone in the first 10,000 gets one free reading a week.</span>
         <span id="try-count" hidden></span>
       </p>
     </div>
@@ -1263,8 +1281,8 @@ a { color: var(--plum-deep); }
   <section class="three" id="three">
     <div class="wrap">
       <div class="section-head reveal">
-        <h2>Three ways she reads you</h2>
-        <p>One question at a time. Each one answers a different kind of question, and she will tell you if you have come to the wrong door.</p>
+        <h2>Six ways she reads you</h2>
+        <p>One question at a time. Each one answers a different kind of question, and she will tell you if you have come to the wrong door. Three of them you can try on this page; all six are in the app.</p>
       </div>
 
       <div class="cards">
@@ -1312,7 +1330,7 @@ a { color: var(--plum-deep); }
 
       
       <div class="section-head more-head reveal">
-        <h3>And four more ways to ask</h3>
+        <h3>The other three, and a daily ritual</h3>
       </div>
 
       <div class="more">
@@ -1322,7 +1340,7 @@ a { color: var(--plum-deep); }
         </article>
 
         <article class="mini reveal d1">
-          <h4>Matchmaking</h4>
+          <h4>Kundli Milan</h4>
           <p>The two of you, read out loud. Ashtakoota done properly, and then said in words — not handed over as a score out of thirty-six.</p>
         </article>
 
@@ -1339,6 +1357,97 @@ a { color: var(--plum-deep); }
       </div>
     </div>
   </section>
+
+  <section class="glimpse" id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <h2>A glimpse of the app</h2>
+        <p>Everything here is built and working in the Android preview. The app is bright in the day and plum at night — and so is this part of the page.</p>
+      </div>
+
+      <div class="more">
+        <article class="mini reveal">
+          <h4>Your own cards</h4>
+          <p>All 78, face down. You pick them, not the app. One card, then five.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>A real birth chart</h4>
+          <p>Worked out from your date, time and place, with 7.8 lakh towns and cities to choose from. Not a sun sign.</p>
+        </article>
+        <article class="mini reveal d2">
+          <h4>Dasha, five levels deep</h4>
+          <p>Your Vimshottari periods, read down to five levels.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>Kundli Milan</h4>
+          <p>The guna score and the Manglik check — and then what they mean for the two of you, in words.</p>
+        </article>
+        <article class="mini reveal">
+          <h4>Muhurat</h4>
+          <p>The good hours of the day for your city, with the festivals and fasts of seven traditions.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>Prashna</h4>
+          <p>No birth time? A chart cast for the moment you asked.</p>
+        </article>
+        <article class="mini reveal d2">
+          <h4>Stay in the conversation</h4>
+          <p>Up to 30 follow-up questions on the same reading, and remedies after. No clock running.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>A reading for someone else</h4>
+          <p>Ask for your mother, your partner or a friend — with their details, not yours.</p>
+        </article>
+        <article class="mini reveal">
+          <h4>Every reading kept</h4>
+          <p>What she told you stays in My readings, so you can come back to it.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>A price you see first</h4>
+          <p>A rupee wallet, and the price shown before you ask. No per-minute meter, no AutoPay.</p>
+        </article>
+        <article class="mini reveal d2">
+          <h4>No answer, no charge</h4>
+          <p>If a reading fails, you are not charged for it.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>Openly an AI</h4>
+          <p>Every reading says on screen that Ru is an AI. No invented guru.</p>
+        </article>
+        <article class="mini reveal">
+          <h4>English or Hinglish</h4>
+          <p>You choose, and she stays in it.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>Looked after</h4>
+          <p>Every message is checked for distress, and any reading can be reported.</p>
+        </article>
+        <article class="mini reveal d2">
+          <h4>Your data is yours</h4>
+          <p>Export it, or delete your account, from inside the app.</p>
+        </article>
+        <article class="mini reveal d1">
+          <h4>Cream by day, plum by night</h4>
+          <p>The app changes with the hour, and so does this section of the page.</p>
+        </article>
+      </div>
+
+      <div class="section-head more-head reveal">
+        <h3>Every belief, one calendar</h3>
+      </div>
+      <div class="faiths reveal">
+        <div class="faith"><b>20</b><span>Hindu</span></div>
+        <div class="faith"><b>11</b><span>Muslim</span></div>
+        <div class="faith"><b>5</b><span>Christian</span></div>
+        <div class="faith"><b>4</b><span>Jain</span></div>
+        <div class="faith"><b>3</b><span>Sikh</span></div>
+        <div class="faith"><b>3</b><span>Buddhist</span></div>
+        <div class="faith"><b>1</b><span>Parsi</span></div>
+      </div>
+      <p class="belief-note reveal">Muhurat carries 47 festivals and fasts, each in its own tradition&rsquo;s names. Ru never asks your religion when you sign up; you choose a tradition only if you want its calendar. A date fixed by a moon sighting is marked &ldquo;announced&rdquo;, not guessed. And a remedy is something you do — a prayer, a fast, a donation — never something you buy.</p>
+    </div>
+  </section>
+
 
   
   <section class="how">

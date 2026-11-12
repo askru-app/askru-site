@@ -653,7 +653,7 @@ $("f-lock").addEventListener("submit", async function(e) {
     } else if (ok === null) {
         setMsg(m, "err", "Couldn't verify right now. Please try again.");
     } else {
-        setMsg(m, "err", "That code didn't work. Check it with the founder — after several wrong tries, access pauses for up to an hour.");
+        setMsg(m, "err", "That code didn't work. Check it with the founder.");
         $("passcode").select();
     }
 });

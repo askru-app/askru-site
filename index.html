@@ -569,6 +569,24 @@ h2 {
 .try-perk strong { color: var(--gold); font-weight: 700; }
 .try-unlock { margin: 4px 0 14px; font-size: 14.5px; line-height: 1.55; color: var(--ink-muted); }
 .try-unlock strong { color: var(--ink); font-weight: 700; }
+/* Today's Muhurat — shown only after joining. */
+.try-muhurat select { margin-top: 14px; }
+.try-muhurat .try-link { width: auto; margin-top: 0; }
+.try-mu-out { margin-top: 6px; }
+.try-mu-head { margin: 0 0 10px; font-size: 14.5px; line-height: 1.55; color: var(--ink-muted); }
+.try-mu-head strong { color: var(--ink); }
+.try-mu-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.try-mu-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); font-size: 15px; }
+.try-mu-row b { flex: 0 0 4.4em; font-weight: 700; color: var(--ink); }
+.try-mu-row .t { flex: 1 1 auto; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.try-mu-row .g { flex: 0 0 auto; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.try-mu-row.good .g { color: #8fd6a8; }
+.try-mu-row.bad .g { color: #ff9aa8; }
+.try-mu-row.now { outline: 2px solid var(--gold); outline-offset: 1px; }
+.try-mu-extra { margin: 12px 0 0; display: grid; gap: 6px; font-size: 14.5px; line-height: 1.5; color: var(--ink-muted); }
+.try-mu-extra p { margin: 0; }
+.try-mu-extra strong { color: var(--ink); }
+@media (max-width: 420px) { .try-mu-row { font-size: 14px; gap: 8px; padding: 10px; } .try-mu-row b { flex-basis: 3.8em; } }
 /* A glimpse of the app. The app is cream by day and plum by night, and this band does the same. */
 .glimpse { padding: 62px 0; }
 .glimpse .more { margin-top: 6px; }
@@ -1085,7 +1103,7 @@ a { color: var(--plum-deep); }
             <option value="hinglish">Hinglish</option>
           </select>
         </div>
-        <p class="try-unlock"><strong>What joining unlocks:</strong> one free reading right here — Vedic, Tarot or Oracle — a place among the first 1,000 who read free, and a free reading every week for your first three months in the app.</p>
+        <p class="try-unlock"><strong>What joining unlocks:</strong> one free reading right here — Vedic, Tarot or Oracle — today&rsquo;s Muhurat for your city, a place among the first 1,000 who read free, and a free reading every week for your first three months in the app.</p>
         <button class="btn btn-primary" type="submit" id="try-join-go">Join the list &amp; read me</button>
         <p class="wl-msg" id="try-join-msg" role="status" aria-live="polite"></p>
 
@@ -1209,6 +1227,50 @@ a { color: var(--plum-deep); }
         <button class="btn btn-primary" type="submit" id="try-follow-go">Ask</button>
         <p class="wl-msg" id="try-follow-msg" role="status" aria-live="polite"></p>
       </form>
+
+      
+      <div class="try-panel try-muhurat" id="try-muhurat" hidden>
+        <p class="try-after-title">Today&rsquo;s Muhurat, for your city</p>
+        <p class="try-after-body">Yours for joining: today&rsquo;s Choghadiya, Abhijit and Rahu Kaal, worked out from sunrise and sunset where you are.</p>
+        <select id="try-mu-city" aria-label="Your city">
+          <optgroup label="India">
+            <option value="28.61,77.21,Asia/Kolkata">Delhi</option>
+            <option value="19.08,72.88,Asia/Kolkata">Mumbai</option>
+            <option value="22.57,88.36,Asia/Kolkata">Kolkata</option>
+            <option value="13.08,80.27,Asia/Kolkata">Chennai</option>
+            <option value="12.97,77.59,Asia/Kolkata">Bengaluru</option>
+            <option value="17.39,78.49,Asia/Kolkata">Hyderabad</option>
+            <option value="18.52,73.86,Asia/Kolkata">Pune</option>
+            <option value="23.02,72.57,Asia/Kolkata">Ahmedabad</option>
+            <option value="26.91,75.79,Asia/Kolkata">Jaipur</option>
+            <option value="26.85,80.95,Asia/Kolkata">Lucknow</option>
+            <option value="30.73,76.78,Asia/Kolkata">Chandigarh</option>
+            <option value="22.72,75.86,Asia/Kolkata">Indore</option>
+            <option value="23.26,77.41,Asia/Kolkata">Bhopal</option>
+            <option value="25.59,85.14,Asia/Kolkata">Patna</option>
+            <option value="25.32,82.97,Asia/Kolkata">Varanasi</option>
+            <option value="21.15,79.09,Asia/Kolkata">Nagpur</option>
+            <option value="21.17,72.83,Asia/Kolkata">Surat</option>
+            <option value="9.93,76.27,Asia/Kolkata">Kochi</option>
+            <option value="26.14,91.74,Asia/Kolkata">Guwahati</option>
+          </optgroup>
+          <optgroup label="Elsewhere">
+            <option value="27.72,85.32,Asia/Kathmandu">Kathmandu</option>
+            <option value="25.20,55.27,Asia/Dubai">Dubai</option>
+            <option value="1.35,103.82,Asia/Singapore">Singapore</option>
+            <option value="51.51,-0.13,Europe/London">London</option>
+            <option value="40.71,-74.01,America/New_York">New York</option>
+            <option value="43.65,-79.38,America/Toronto">Toronto</option>
+            <option value="37.77,-122.42,America/Los_Angeles">San Francisco</option>
+            <option value="-33.87,151.21,Australia/Sydney">Sydney</option>
+          </optgroup>
+        </select>
+        <button class="btn btn-ghost" type="button" id="try-mu-go">Show today&rsquo;s timings</button>
+        <p class="try-na"><button class="try-link" type="button" id="try-mu-here">Use my location instead</button></p>
+        <p class="wl-msg" id="try-mu-msg" role="status" aria-live="polite"></p>
+        <div class="try-mu-out" id="try-mu-out" hidden></div>
+        <p class="try-streak-note">The whole month, the festivals and fasts of seven traditions, and the right day for a purpose are in the app. Your place is used once to work out sunrise and sunset, and is not saved.</p>
+      </div>
 
       
       <div class="try-panel try-streak" id="try-streak" hidden>
@@ -2454,6 +2516,7 @@ if (reduce || !("IntersectionObserver" in window)) {
                 return;
             }
             token = b.token;
+            try { if (window.__askruJoined) window.__askruJoined(token); } catch (e3) {}
             try {
                 window.localStorage.setItem(STORE, token);
             } catch (e2) {}
@@ -3193,5 +3256,151 @@ if (reduce || !("IntersectionObserver" in window)) {
         } catch (e) {}
     });
 })();</script>
+<script>
+/* Today's Muhurat, for somebody who has joined. Founder, 12 Nov 2026: the day's timings on the
+   website, only after the visitor has given their details. The door is the join token and the
+   SERVER checks it (try-muhurat); this script only decides when the panel is on the page. */
+(function () {
+  var cfg = window.ASKRU || {};
+  var STORE = "askru.try.token";
+  var panel = document.getElementById("try-muhurat");
+  var join = document.getElementById("try-join");
+  if (!panel || !join || !cfg.url || !cfg.anonKey) return;
+  var city = document.getElementById("try-mu-city");
+  var go = document.getElementById("try-mu-go");
+  var here = document.getElementById("try-mu-here");
+  var msg = document.getElementById("try-mu-msg");
+  var out = document.getElementById("try-mu-out");
+  var mem = null; /* the token, for a browser that will not let us read localStorage */
+
+  function tok() {
+    var t = null;
+    try { t = window.localStorage.getItem(STORE); } catch (e) {}
+    return t || mem;
+  }
+  function say(text, kind) {
+    msg.textContent = text || "";
+    msg.className = "wl-msg" + (kind ? " " + kind : "");
+  }
+  /* On the page only while the visitor is joined: a token, and the join form put away. */
+  function sync() {
+    if (!join.hidden) mem = null;
+    var open = !!tok() && join.hidden;
+    panel.hidden = !open;
+    if (!open) { out.hidden = true; out.textContent = ""; say(""); }
+  }
+  window.__askruJoined = function (t) { mem = t || null; setTimeout(sync, 0); };
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function clock(ms, tz, off) {
+    try {
+      return new Intl.DateTimeFormat("en-IN", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true }).format(new Date(ms));
+    } catch (e) {
+      var d = new Date(ms + (off || 0) * 1000), h = d.getUTCHours(), m = d.getUTCMinutes();
+      return ((h % 12) || 12) + ":" + (m < 10 ? "0" : "") + m + (h < 12 ? " am" : " pm");
+    }
+  }
+  function dayName(ms, tz) {
+    try {
+      return new Intl.DateTimeFormat("en-IN", { timeZone: tz, weekday: "long", day: "numeric", month: "long" }).format(new Date(ms));
+    } catch (e) { return ""; }
+  }
+
+  function draw(b, label) {
+    var day = b.day || {}, t = day.timings || {}, tz = (b.place || {}).tz, off = day.offsetSeconds;
+    var f = function (ms) { return clock(ms, tz, off); };
+    var now = Date.now();
+    out.textContent = "";
+
+    var head = el("p", "try-mu-head");
+    head.appendChild(el("strong", "", label));
+    var when = dayName(t.sunriseMs, tz);
+    head.appendChild(document.createTextNode((when ? " · " + when : "") + " · sunrise " + f(t.sunriseMs) + " · sunset " + f(t.sunsetMs)));
+    out.appendChild(head);
+
+    var p = day.panchang;
+    if (p && p.tithi) {
+      var pk = p.paksha === "shukla" ? "Shukla " : p.paksha === "krishna" ? "Krishna " : "";
+      out.appendChild(el("p", "try-mu-head", "At sunrise — tithi: " + pk + p.tithi + (p.nakshatra ? " · nakshatra: " + p.nakshatra : "")));
+    }
+
+    var ul = el("ul", "try-mu-list");
+    (t.dayChoghadiya || []).forEach(function (c) {
+      var live = now >= c.fromMs && now < c.toMs;
+      var li = el("li", "try-mu-row " + (c.good ? "good" : "bad") + (live ? " now" : ""));
+      li.appendChild(el("b", "", c.name));
+      li.appendChild(el("span", "t", f(c.fromMs) + " – " + f(c.toMs)));
+      li.appendChild(el("span", "g", (live ? "Now · " : "") + (c.good ? "Good" : "Avoid")));
+      ul.appendChild(li);
+    });
+    out.appendChild(ul);
+
+    var ex = el("div", "try-mu-extra");
+    var line = function (name, per, note) {
+      if (!per) return;
+      var q = el("p", "");
+      q.appendChild(el("strong", "", name));
+      q.appendChild(document.createTextNode(" " + f(per.fromMs) + " – " + f(per.toMs) + " · " + note));
+      ex.appendChild(q);
+    };
+    line("Abhijit", t.abhijit, "the best window of the day");
+    line("Rahu Kaal", t.rahuKaal, "not the hour to begin something new");
+    if (now >= t.sunsetMs) ex.appendChild(el("p", "", "The sun has set there — these were today’s daytime hours."));
+    else if (now < t.sunriseMs) ex.appendChild(el("p", "", "The sun has not risen there yet — these are today’s daytime hours."));
+    out.appendChild(ex);
+    out.hidden = false;
+  }
+
+  function busy(on) { go.disabled = on; here.disabled = on; }
+
+  function ask(lat, lon, tz, label) {
+    var t = tok();
+    if (!t) { sync(); return; }
+    busy(true);
+    say("Working out sunrise and sunset…");
+    fetch(cfg.url + "/functions/v1/try-muhurat", {
+      method: "POST",
+      headers: { apikey: cfg.anonKey, Authorization: "Bearer " + cfg.anonKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ token: t, lat: lat, lon: lon, tz: tz })
+    }).then(function (r) {
+      return r.json().catch(function () { return null; }).then(function (j) { return { status: r.status, body: j }; });
+    }).then(function (res) {
+      busy(false);
+      if (res.status === 200 && res.body && res.body.day) { say(""); draw(res.body, label); return; }
+      if (res.status === 401) { mem = null; out.hidden = true; say("Join the list to see today’s Muhurat.", "bad"); return; }
+      say((res.body && res.body.error && res.body.error.message) || "That could not be worked out just now. Please try again.", "bad");
+    }).catch(function () {
+      busy(false);
+      say("That could not be reached just now. Please try again.", "bad");
+    });
+  }
+
+  go.addEventListener("click", function () {
+    var v = String(city.value || "").split(",");
+    var o = city.options[city.selectedIndex];
+    ask(Number(v[0]), Number(v[1]), v[2] || "", o ? o.text : "Your city");
+  });
+  here.addEventListener("click", function () {
+    if (!navigator.geolocation) { say("This browser cannot share a location — choose a city instead.", "bad"); return; }
+    var tz = "";
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+    if (!tz) { say("Your time zone could not be read — choose a city instead.", "bad"); return; }
+    say("Asking your browser where you are…");
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      ask(Math.round(pos.coords.latitude * 100) / 100, Math.round(pos.coords.longitude * 100) / 100, tz, "Where you are");
+    }, function () {
+      say("Location was not shared — choose a city instead.", "bad");
+    }, { timeout: 10000, maximumAge: 600000 });
+  });
+
+  try { new MutationObserver(sync).observe(join, { attributes: true, attributeFilter: ["hidden"] }); } catch (e) {}
+  sync();
+})();
+</script>
 </body>
 </html>

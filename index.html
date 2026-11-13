@@ -3357,7 +3357,7 @@ if (reduce || !("IntersectionObserver" in window)) {
        Gulika, and says what it left out. The whole of it used to be called the best window here. */
     var cut = t.abhijitCut;
     line("Abhijit", t.abhijit, cut
-      ? "the best window today. The rest of the Abhijit muhurat (" + f(cut.fullFromMs) + " – " + f(cut.fullToMs) + ") falls in " + cut.by + " and is left out"
+      ? "the best window today. The full Abhijit muhurat is " + f(cut.fullFromMs) + " – " + f(cut.fullToMs) + "; the part of it inside " + cut.by + " is left out"
       : "the best window of the day");
     line("Rahu Kaal", t.rahuKaal, "not the hour to begin something new");
     if (now >= t.sunsetMs) ex.appendChild(el("p", "", "The sun has set there — these were today’s daytime hours."));

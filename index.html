@@ -3334,13 +3334,13 @@ if (reduce || !("IntersectionObserver" in window)) {
       var live = now >= c.fromMs && now < c.toMs;
       /* 13 Nov 2026: Rahu Kaal is one of these eight parts. The part that IS Rahu Kaal is not shown as Good,
          whatever its choghadiya is called - the line under this list says not to begin anything in it. */
-      var rk = t.rahuKaal;
-      var inRahu = !!rk && c.fromMs < rk.toMs && c.toMs > rk.fromMs;
+      var hit = [t.rahuKaal, t.yamaganda, t.gulika].filter(function (b) { return !!b && c.fromMs < b.toMs && c.toMs > b.fromMs; })[0];
+      var inRahu = !!hit;
       var ok = c.good && !inRahu;
       var li = el("li", "try-mu-row " + (ok ? "good" : "bad") + (live ? " now" : ""));
       li.appendChild(el("b", "", c.name));
       li.appendChild(el("span", "t", f(c.fromMs) + " – " + f(c.toMs)));
-      li.appendChild(el("span", "g", (live ? "Now · " : "") + (ok ? "Good" : (c.good && inRahu ? "Avoid · Rahu Kaal" : "Avoid"))));
+      li.appendChild(el("span", "g", (live ? "Now · " : "") + (ok ? "Good" : (c.good && inRahu ? "Avoid · " + hit.name : "Avoid"))));
       ul.appendChild(li);
     });
     out.appendChild(ul);

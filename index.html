@@ -475,6 +475,13 @@ h2 {
   border-top: 1px solid rgba(255,255,255,.14); color: var(--ink-muted); }
 
 .try-deeper { width: auto; min-height: 44px; padding: 0 22px; margin: 16px auto; display: block; }
+/* 🔴 17 Nov 2026 — the line that says a NEW reading starts here. Without it the five-card
+   reading appended under the last answer and read as the same reply continuing. */
+.try-divider { display: flex; align-items: center; gap: 12px; margin: 26px 0 14px;
+  font-size: 12.5px; letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--ink-muted); font-weight: 700; }
+.try-divider::before, .try-divider::after { content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(224,168,74,.55), transparent); }
 
 
 .try-card-art { display: block; margin: 0 auto 10px; width: 168px; height: 282px;
@@ -925,6 +932,17 @@ a { color: var(--plum-deep); }
     "@type": "Organization",
     "name": "CodeUpVik",
     "url": "https://codeupvik.com/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Teatalz House Of Rume Private Limited",
+    "url": "https://teatalz.com",
+    "founder": {
+      "@type": "Person",
+      "@id": "https://codeupvik.com/#person",
+      "name": "Vikram Bhargava",
+      "url": "https://teatalz.com/founder.html"
+    }
   }
 }
 </script>
@@ -2235,6 +2253,16 @@ if (reduce || !("IntersectionObserver" in window)) {
             token: token
         });
         if (what.clarify === undefined) payload.deeper = true; else payload.clarify = what.clarify;
+        /* 🔴 17 Nov 2026 — the angel, if one has been taken. Until today the page kept it to
+           itself: Ru was never told an angel had come, so no spread and no clarifier ever
+           read through it — while the blessing on screen promised "dekhte hain wo aapke cards
+           ke baare mein kya kehte hain". The server matches the name against its own list. */
+        if (theAngel && theAngel.name) payload.angel = theAngel.name;
+        var hing = langEl && langEl.value === "hinglish";
+        /* The line that says a new reading begins here — see `divider`. */
+        divider(what.clarify === undefined
+            ? (hing ? "Vistaar se — paanch card" : "In full — the five cards")
+            : (hing ? "Ek card aur" : "One more card"));
         api("try-ru", {
             body: payload
         }).then(function(res) {
@@ -2685,6 +2713,24 @@ if (reduce || !("IntersectionObserver" in window)) {
         el.textContent = text;
         out.appendChild(el);
         out.hidden = false;
+    }
+    /* 🔴 17 Nov 2026 — A NEW READING NEEDS TO LOOK LIKE ONE.
+       The founder, 14 Nov: "detail it out click karne pe last chat ke neeche he continue hua
+       ... ye confusion dega user ko." Pressing it appended more bubbles under the previous
+       answer with nothing between them, so the five-card reading read as the same reply
+       going on. This puts a named line across the thread first, so the person can see where
+       one reading ended and the next began. */
+    function divider(text) {
+        var el = document.createElement("p");
+        el.className = "try-divider";
+        el.textContent = text;
+        out.appendChild(el);
+        out.hidden = false;
+        /* Brought into view as soon as it is drawn, which is BEFORE the answer arrives: the
+           person sees the new section open while Ru is still reading, rather than watching
+           the old answer sit there for ten seconds and then more text appear under it. */
+        try { el.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+        return el;
     }
     var GRAHA_SHORT = {
         Sun: "Su",

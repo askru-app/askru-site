@@ -894,7 +894,8 @@ a { color: var(--plum-deep); }
   "url": "https://askru.in/",
   "sameAs": [
     "https://www.instagram.com/askruai/",
-    "https://www.facebook.com/profile.php?id=61595831228428"
+    "https://www.facebook.com/profile.php?id=61595831228428",
+    "https://x.com/teatalz"
   ],
   "applicationCategory": "LifestyleApplication",
   "operatingSystem": "Android",
@@ -919,7 +920,8 @@ a { color: var(--plum-deep); }
     "name": "Ask Ru",
     "sameAs": [
       "https://www.instagram.com/askruai/",
-      "https://www.facebook.com/profile.php?id=61595831228428"
+      "https://www.facebook.com/profile.php?id=61595831228428",
+      "https://x.com/teatalz"
     ]
   },
   "creator": {
@@ -1122,6 +1124,19 @@ a { color: var(--plum-deep); }
           </select>
         </div>
         <p class="try-unlock"><strong>What joining unlocks:</strong> one free reading right here — Vedic, Tarot or Oracle — today&rsquo;s Muhurat for your city, a place among the first 1,000 who read free, and — if you are among the first 10,000 to join — one free reading every week in the app.</p>
+
+        <!-- The robot check. It renders itself from the data- attributes; the script is
+             loaded at the end of the page with async+defer so a slow third party can
+             never hold up the page a visitor came here to read.
+             🔴 THE PAGE NEVER BLOCKS ON IT. If hCaptcha fails to load, the form still
+             submits with no token and the SERVER decides — which is right, because the
+             server is the only side that can be trusted about this anyway. Today the
+             server ignores a missing token; the day HCAPTCHA_SECRET is set it refuses
+             one, and nothing here has to change for that. -->
+        <div class="h-captcha" id="try-captcha"
+             data-sitekey="a440ca84-50b0-4a62-86fa-cd42d14ce384"
+             data-theme="dark"></div>
+
         <button class="btn btn-primary" type="submit" id="try-join-go">Join the list &amp; read me</button>
         <p class="wl-msg" id="try-join-msg" role="status" aria-live="polite"></p>
 
@@ -2523,6 +2538,17 @@ if (reduce || !("IntersectionObserver" in window)) {
         if (nm) body.name = nm;
         var mobile = (phoneEl.value || "").trim();
         if (mobile) body.mobile = mobile;
+        /* The robot check's answer, if the widget managed to load and the person
+           solved it. Sent when present and simply left out when not — the server is
+           what decides whether a join without one is allowed, and it already does.
+           Wrapped because hCaptcha may not be there at all (blocked, offline, an
+           extension), and a join must never die on a missing third-party global. */
+        try {
+            if (typeof hcaptcha !== "undefined" && hcaptcha && typeof hcaptcha.getResponse === "function") {
+                var cap = hcaptcha.getResponse();
+                if (cap) body.captchaToken = cap;
+            }
+        } catch (e) {}
         api("waitlist-join", {
             body: body
         }).then(function(res) {
@@ -3458,5 +3484,13 @@ if (reduce || !("IntersectionObserver" in window)) {
   sync();
 })();
 </script>
+
+<!-- hCaptcha, last and out of the way.
+     async + defer: it renders the widget when it arrives and the rest of the page
+     never waits for it. If it never arrives, the form still submits with no token
+     and `waitlist-join` decides — which is the only side that can decide anyway.
+     The site key here is PUBLIC by design; the secret lives in the function's
+     environment and appears nowhere in this repo. -->
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </body>
 </html>

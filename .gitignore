@@ -1,0 +1,84 @@
+# askru-site is a PUBLIC repository and it is served as-is.
+#
+# There was no .gitignore here at all until 17 Nov 2026. Nothing dangerous had been
+# committed — checked before writing this: `assets/config.js` carries one token and it
+# decodes to role `anon` on the Ask Ru project, which is what it is for, and the only
+# three mentions of `service_role` in this repo are the comment telling you never to
+# put that key here. So this is a guard, not a clean-up.
+#
+# WHAT THIS CAN AND CANNOT DO — read before trusting it:
+#
+#   · It does NOT protect a file that is already tracked. `git rm --cached` is the
+#     only thing that stops a tracked file being published.
+#   · It does NOT survive `git add -f`, which is exactly how an ignored file ends up
+#     committed by somebody in a hurry.
+#   · It is itself PUBLIC and served. Every line here is readable at the site's own
+#     domain, so this file names only generic patterns on purpose. A list of this
+#     project's interesting filenames would be a map, and a map of what we hide is
+#     worth more to somebody looking than the patterns are worth to us.
+#
+# The real protection is that no secret belongs in this repo in any form. The site
+# talks to Supabase with the anon key and RLS; everything privileged goes through an
+# edge function.
+
+# ── environment and secrets ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+*.asc
+
+# ── credentials a tool might drop here ────────────────────────────────────────
+.netrc
+.npmrc
+.supabase/
+.vercel/
+.wrangler/
+.firebase/
+service-account*.json
+gha-creds-*.json
+
+# ── editor and OS litter ──────────────────────────────────────────────────────
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── the shapes a backup takes, which is how a draft gets published ────────────
+*~
+*.bak
+*.orig
+*.rej
+*.tmp
+*.old
+*.save
+*.copy
+*copy.html
+*-backup.*
+*.html.bak
+
+# ── build and dependency output ───────────────────────────────────────────────
+node_modules/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+
+# ── archives, which hide everything above inside themselves ───────────────────
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar

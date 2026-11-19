@@ -1910,6 +1910,13 @@ if (reduce || !("IntersectionObserver" in window)) {
     /* While true, taps on the deck collect FIVE positions instead of one. */
     var spreadPicking = false;
     var spreadPicks = [];
+    /* 🔴 THE FIVE THEY PICKED, KEPT FOR THE REST OF THE READING — 19 Nov 2026.
+       The clarifier sent only {clarify: idx}, so the server saw no picks and
+       fell back to its own seed-drawn five — a DIFFERENT spread from the one
+       on screen. Every clarifier then read the same seed cards, which is why
+       the founder saw the same reply each time. The picks have to outlive the
+       call that made them. */
+    var lastSpreadPicks = null;
     var askWasOpen = false;
     var followWasOpen = false;
     var cardsNote = document.getElementById("try-cards-note");
@@ -2313,7 +2320,10 @@ if (reduce || !("IntersectionObserver" in window)) {
            ke baare mein kya kehte hain". The server matches the name against its own list. */
         if (theAngel && theAngel.name) payload.angel = theAngel.name;
         /* Positions of the face-down cards they tapped - never codes. */
-        if (what.picks && what.picks.length === 5) payload.spreadPicks = what.picks;
+        if (what.picks && what.picks.length === 5) lastSpreadPicks = what.picks.slice(0, 5);
+        /* Sent on the deeper read AND on every clarifier after it, so all of
+           them read the cards the person actually chose. */
+        if (lastSpreadPicks && lastSpreadPicks.length === 5) payload.spreadPicks = lastSpreadPicks;
         var hing = langEl && langEl.value === "hinglish";
         /* The line that says a new reading begins here — see `divider`. */
         divider(what.clarify === undefined

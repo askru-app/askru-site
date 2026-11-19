@@ -1250,6 +1250,7 @@ a { color: var(--plum-deep); }
       </div>
 
       
+      <p class="try-angel-line" id="try-deeper-hint" hidden></p>
       <button class="btn btn-primary try-deeper" type="button" id="try-deeper" hidden>Detail it out</button>
       <div class="try-spread" id="try-spread" hidden></div>
 
@@ -1990,6 +1991,10 @@ if (reduce || !("IntersectionObserver" in window)) {
         showBuyIfSpent();
     }
     var deeperBtn = document.getElementById("try-deeper");
+    var deeperHint = document.getElementById("try-deeper-hint");
+    /* Set when the person presses "Get me an angel" — not when one is merely
+       available, because the gate is about their choice, not our draw. */
+    var angelTaken = false;
     var buyBox = document.getElementById("try-buy");
     var buyGo = document.getElementById("try-buy-go");
     var buyMsg = document.getElementById("try-buy-msg");
@@ -3019,6 +3024,16 @@ if (reduce || !("IntersectionObserver" in window)) {
             if (angelOut.hidden) angelWrap.hidden = false;
         }
         deeperBtn.hidden = !(!spreadLaid && !b.spread && b.mode === "tarot");
+        /* 🔴 SHUT UNTIL THE ANGEL IS TAKEN. The angel only reaches Ru on this
+           call and the clarifiers after it; opening the five cards first is
+           how somebody ends up with an angel that read nothing. */
+        deeperBtn.disabled = !angelTaken;
+        if (deeperHint) {
+          deeperHint.textContent = (langEl && langEl.value === "hinglish")
+            ? "Pehle angel bulaiye — wo aage ki reading ko raasta dikhayega."
+            : "Get the angel to guide further reading.";
+          deeperHint.hidden = deeperBtn.hidden || angelTaken;
+        }
         buyBox.hidden = true;
         showBuyIfSpent();
         if (b.spread) layTheFive(b.spread);
@@ -3139,6 +3154,10 @@ if (reduce || !("IntersectionObserver" in window)) {
         }
         angelGo.hidden = true;
         angelOut.hidden = false;
+        /* The five cards were waiting for this. */
+        angelTaken = true;
+        if (deeperBtn) deeperBtn.disabled = false;
+        if (deeperHint) deeperHint.hidden = true;
         seal.textContent = (theAngel.name || "?").charAt(0).toUpperCase();
         vName.textContent = theAngel.name;
         vBrings.textContent = theAngel.brings ? "Brings " + theAngel.brings : "";

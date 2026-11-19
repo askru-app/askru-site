@@ -2250,8 +2250,20 @@ if (reduce || !("IntersectionObserver" in window)) {
     });
     var spreadEl = document.getElementById("try-spread");
     var spreadLaid = false;
+    /* 🔴 EVERY CLARIFIER TAKEN, BY POSITION — 19 Nov 2026. The reply carries
+       only the one drawn on this turn, and `layTheFive` rebuilds the grid from
+       the reply, so each clarifier used to erase the one before it and offer
+       its button again. Keyed to the five cards themselves: a different five is
+       a different reading and clears this without anybody remembering to. */
+    var clarifiersSeen = [null, null, null, null, null];
+    var clarifiersFor = "";
     function layTheFive(sp) {
         if (!sp || !sp.cards || !sp.cards.length) return;
+        var key = sp.cards.join("|");
+        if (key !== clarifiersFor) { clarifiersFor = key; clarifiersSeen = [null, null, null, null, null]; }
+        if (sp.clarifier && typeof sp.clarifier.position === "number") {
+            clarifiersSeen[sp.clarifier.position] = sp.clarifier;
+        }
         spreadEl.innerHTML = "";
         for (var i = 0; i < sp.cards.length; i++) {
             (function(idx) {
@@ -2282,21 +2294,22 @@ if (reduce || !("IntersectionObserver" in window)) {
                     cell.appendChild(im);
                 }
                 cell.appendChild(c);
-                var isClarified = sp.clarifier && sp.clarifier.position === idx;
+                var mine = clarifiersSeen[idx];
+                var isClarified = !!mine;
                 if (isClarified) {
                     var ex = document.createElement("span");
                     ex.className = "extra";
-                    ex.textContent = "Clarifier — " + String(sp.clarifier.name);
+                    ex.textContent = "Clarifier — " + String(mine.name);
                     cell.appendChild(ex);
                     /* 🔴 AND ITS FACE — 19 Nov 2026. `clarifier.art` has been in
                        the reply since the five got theirs; only the name was read.
                        Same fallbacks as the five: no art, or a missing file, and the
                        name stands alone rather than a broken image. */
-                    if (sp.clarifier.art) {
+                    if (mine.art) {
                         var cim = document.createElement("img");
                         cim.className = "try-card-art try-card-art-small";
-                        cim.src = "assets/tarot/" + String(sp.clarifier.art) + ".jpg";
-                        cim.alt = String(sp.clarifier.name);
+                        cim.src = "assets/tarot/" + String(mine.art) + ".jpg";
+                        cim.alt = String(mine.name);
                         cim.loading = "lazy";
                         cim.width = 84;
                         cim.height = 141;
@@ -3237,6 +3250,13 @@ if (reduce || !("IntersectionObserver" in window)) {
             if (render(res) && !(res.body && res.body.noReading)) {
                 if (!(res.body && res.body.moreReadings)) pick.hidden = true;
                 spreadLaid = false;
+                /* 🔴 AND THE CLARIFIERS GO WITH IT. The key on the five is the
+                   ordinary guard; this covers the one case it cannot see — the
+                   same person tapping the same five face-down cards again, which
+                   the session seed turns into the SAME five. A new reading must
+                   not open wearing the last one’s clarifiers. */
+                clarifiersSeen = [null, null, null, null, null];
+                clarifiersFor = "";
                 spreadEl.hidden = true;
                 spreadEl.innerHTML = "";
                 q.value = "";

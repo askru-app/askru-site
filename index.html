@@ -1127,12 +1127,7 @@ a { color: var(--plum-deep); }
 
         <!-- The robot check. It renders itself from the data- attributes; the script is
              loaded at the end of the page with async+defer so a slow third party can
-             never hold up the page a visitor came here to read.
-             🔴 THE PAGE NEVER BLOCKS ON IT. If hCaptcha fails to load, the form still
-             submits with no token and the SERVER decides — which is right, because the
-             server is the only side that can be trusted about this anyway. Today the
-             server ignores a missing token; the day HCAPTCHA_SECRET is set it refuses
-             one, and nothing here has to change for that. -->
+             never hold up the page a visitor came here to read. -->
         <div class="h-captcha" id="try-captcha"
              data-sitekey="a440ca84-50b0-4a62-86fa-cd42d14ce384"
              data-theme="dark"></div>
@@ -2539,8 +2534,7 @@ if (reduce || !("IntersectionObserver" in window)) {
         var mobile = (phoneEl.value || "").trim();
         if (mobile) body.mobile = mobile;
         /* The robot check's answer, if the widget managed to load and the person
-           solved it. Sent when present and simply left out when not — the server is
-           what decides whether a join without one is allowed, and it already does.
+           solved it. Sent when present and simply left out when not.
            Wrapped because hCaptcha may not be there at all (blocked, offline, an
            extension), and a join must never die on a missing third-party global. */
         try {
@@ -3487,9 +3481,7 @@ if (reduce || !("IntersectionObserver" in window)) {
 
 <!-- hCaptcha, last and out of the way.
      async + defer: it renders the widget when it arrives and the rest of the page
-     never waits for it. If it never arrives, the form still submits with no token
-     and `waitlist-join` decides — which is the only side that can decide anyway.
-     The site key here is PUBLIC by design; the secret lives in the function's
+     never waits for it. The site key here is PUBLIC by design; the secret lives in the function's
      environment and appears nowhere in this repo. -->
 <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </body>

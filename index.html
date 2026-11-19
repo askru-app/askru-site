@@ -1227,6 +1227,12 @@ a { color: var(--plum-deep); }
         <div class="try-angel-blessing" id="try-angel-out" hidden>
           <p class="try-angel-name" id="try-angel-name"></p>
           <p class="try-angel-line" id="try-angel-line"></p>
+          <!-- 19 Nov 2026 — what the angel actually says. The blessing above
+               used to end "let's see what they say about your cards" and this
+               paragraph did not exist, so nothing ever said it. The words come
+               from the server with the angel (`says_en` / `says_hinglish`) and
+               are written, not generated: showing them costs no model call. -->
+          <p class="try-angel-line" id="try-angel-says"></p>
         </div>
       </div>
 
@@ -3106,6 +3112,7 @@ if (reduce || !("IntersectionObserver" in window)) {
     var angelOut = document.getElementById("try-angel-out");
     var angelName = document.getElementById("try-angel-name");
     var angelLine = document.getElementById("try-angel-line");
+    var angelSays = document.getElementById("try-angel-says");
     var theAngel = null;
     var veil = document.getElementById("angel-veil");
     var seal = document.getElementById("angel-seal");
@@ -3117,14 +3124,25 @@ if (reduce || !("IntersectionObserver" in window)) {
         if (!theAngel) return;
         var hing = langEl && langEl.value === "hinglish";
         var words = hing ? theAngel.blessing_hinglish : theAngel.blessing_en;
+        /* 🔴 THE ANGEL'S OWN WORDS — 19 Nov 2026. Until today this handler
+           rendered the blessing and stopped, while the blessing's last line
+           said "let's see what they say about your cards". Nothing asked and
+           nothing answered. These arrive with the angel from `try-ru`; they
+           are written rather than generated, so this costs no call. Guarded
+           because an older server deploy does not send them. */
+        var says = (hing ? theAngel.says_hinglish : theAngel.says_en) || "";
         angelName.textContent = theAngel.name;
         angelLine.textContent = words;
+        if (angelSays) {
+            angelSays.textContent = says;
+            angelSays.hidden = !says;
+        }
         angelGo.hidden = true;
         angelOut.hidden = false;
         seal.textContent = (theAngel.name || "?").charAt(0).toUpperCase();
         vName.textContent = theAngel.name;
         vBrings.textContent = theAngel.brings ? "Brings " + theAngel.brings : "";
-        vWords.textContent = words;
+        vWords.textContent = says || words;
         veil.hidden = false;
         try {
             vClose.focus();

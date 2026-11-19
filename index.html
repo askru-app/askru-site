@@ -2288,6 +2288,21 @@ if (reduce || !("IntersectionObserver" in window)) {
                     ex.className = "extra";
                     ex.textContent = "Clarifier — " + String(sp.clarifier.name);
                     cell.appendChild(ex);
+                    /* 🔴 AND ITS FACE — 19 Nov 2026. `clarifier.art` has been in
+                       the reply since the five got theirs; only the name was read.
+                       Same fallbacks as the five: no art, or a missing file, and the
+                       name stands alone rather than a broken image. */
+                    if (sp.clarifier.art) {
+                        var cim = document.createElement("img");
+                        cim.className = "try-card-art try-card-art-small";
+                        cim.src = "assets/tarot/" + String(sp.clarifier.art) + ".jpg";
+                        cim.alt = String(sp.clarifier.name);
+                        cim.loading = "lazy";
+                        cim.width = 84;
+                        cim.height = 141;
+                        cim.addEventListener("error", function() { cim.remove(); });
+                        cell.appendChild(cim);
+                    }
                 } else {
                     var cb = document.createElement("button");
                     cb.type = "button";

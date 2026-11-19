@@ -2326,9 +2326,20 @@ if (reduce || !("IntersectionObserver" in window)) {
         if (lastSpreadPicks && lastSpreadPicks.length === 5) payload.spreadPicks = lastSpreadPicks;
         var hing = langEl && langEl.value === "hinglish";
         /* The line that says a new reading begins here — see `divider`. */
-        divider(what.clarify === undefined
+        /* 🔴 THE ANGEL IS NAMED HERE, BY THE PAGE — 19 Nov 2026.
+           The prompt was asked three times to name it and did not: the founder
+           took an angel, waited for five cards, and saw no trace of it. The
+           reading IS read through the angel — `angelFact` travels on this
+           call — but an influence nobody can see is the same as none.
+           The page knows which angel was taken for certain, so it says so.
+           Same move as the greeting: what the model will not do reliably, the
+           server or the page does. */
+        var through = (theAngel && theAngel.name)
+            ? (hing ? " — " + theAngel.name + " ke through" : " — through " + theAngel.name)
+            : "";
+        divider((what.clarify === undefined
             ? (hing ? "Vistaar se — paanch card" : "In full — the five cards")
-            : (hing ? "Ek card aur" : "One more card"));
+            : (hing ? "Ek card aur" : "One more card")) + through);
         api("try-ru", {
             body: payload
         }).then(function(res) {

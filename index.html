@@ -568,6 +568,7 @@ h2 {
 
 .try-panel .try-mode { width: auto; margin-top: 0; }
 .try-panel button[disabled] { opacity: .55; cursor: not-allowed; }
+.btn[disabled], .btn[disabled]:hover { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; filter: grayscale(.4); }
 
 .try-perk {
   margin: 16px 0 0; padding: 12px 14px; border-radius: 12px;
@@ -1909,6 +1910,8 @@ if (reduce || !("IntersectionObserver" in window)) {
     /* While true, taps on the deck collect FIVE positions instead of one. */
     var spreadPicking = false;
     var spreadPicks = [];
+    var askWasOpen = false;
+    var followWasOpen = false;
     var cardsNote = document.getElementById("try-cards-note");
     var spreadGo = document.getElementById("try-spread-go");
     var prashna = false;
@@ -2337,6 +2340,17 @@ if (reduce || !("IntersectionObserver" in window)) {
            FAQ said they were picked by you. */
         spreadPicking = true;
         spreadPicks = [];
+        /* 🔴 THE NEW-QUESTION BOX GOES AWAY WHILE THEY PICK — 19 Nov 2026.
+           `gateAsk` opens the ask panel after the first reading and nothing
+           closes it, so laying the deck above it put "What would you like to
+           ask?" directly under the five cards being picked. The founder:
+           "ussi wo new question samjh raha hai jab ke ye initial reading ka
+           continuation hai." Its state is remembered and put back, so asking
+           something new afterwards still works. */
+        askWasOpen = askForm ? !askForm.hidden : false;
+        followWasOpen = follow ? !follow.hidden : false;
+        if (askForm) askForm.hidden = true;
+        if (follow) follow.hidden = true;
         deeperBtn.hidden = true;
         if (deeperHint) deeperHint.hidden = true;
         if (cards) cards.hidden = false;
@@ -2354,6 +2368,9 @@ if (reduce || !("IntersectionObserver" in window)) {
         spreadPicking = false;
         spreadGo.hidden = true;
         if (cards) cards.hidden = true;
+        /* Put back exactly what was open before the deck covered it. */
+        if (askForm && askWasOpen) askForm.hidden = false;
+        if (follow && followWasOpen) follow.hidden = false;
         askSpread({ picks: sending }, spreadGo);
     });
     var placesEl = document.getElementById("try-places");

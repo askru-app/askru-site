@@ -484,6 +484,7 @@ h2 {
   background: linear-gradient(90deg, transparent, rgba(224,168,74,.55), transparent); }
 
 
+.try-card-art-small{width:84px;height:141px;border-radius:8px;display:block;margin:6px auto 4px}
 .try-card-art { display: block; margin: 0 auto 10px; width: 168px; height: 282px;
   object-fit: contain; border-radius: 10px; border: 1px solid var(--line-faint);
   background: var(--card); }
@@ -2241,6 +2242,23 @@ if (reduce || !("IntersectionObserver" in window)) {
                 c.className = "what";
                 c.textContent = String(sp.cards[idx]);
                 cell.appendChild(w);
+                /* 🔴 THE PICTURE, BESIDE THE NAME — 19 Nov 2026. `sp.art` comes
+                   from the same pair the server built the name from, so the
+                   Hierophant cannot end up wearing the Star's picture.
+                   ⚠️ Falls back to the name alone: an older server sends no
+                   `art` at all, and a missing file removes its own image. */
+                var artName = sp.art && sp.art[idx];
+                if (artName) {
+                    var im = document.createElement("img");
+                    im.className = "try-card-art try-card-art-small";
+                    im.src = "assets/tarot/" + String(artName) + ".jpg";
+                    im.alt = String(sp.cards[idx]);
+                    im.loading = "lazy";
+                    im.width = 84;
+                    im.height = 141;
+                    im.addEventListener("error", function() { im.remove(); });
+                    cell.appendChild(im);
+                }
                 cell.appendChild(c);
                 var isClarified = sp.clarifier && sp.clarifier.position === idx;
                 if (isClarified) {

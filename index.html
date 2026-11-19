@@ -2877,10 +2877,39 @@ if (reduce || !("IntersectionObserver" in window)) {
         say(msg, "");
         gateAsk(true);
     });
+    /* 🔴 RU WRITES MARKDOWN AND THIS PAGE WAS PRINTING THE MARKS — 19 Nov 2026.
+       The founder, on a live five-card reading: *"ye advice and past star na
+       aye."* The screen read `**Past** — Nine of Swords` and `soften *how* you
+       hold it`, asterisks and all. She has always written this way; the APP
+       renders it, so only the website ever showed the marks.
+
+       ⚠️ ESCAPED FIRST, FORMATTED SECOND, AND NOTHING ELSE IS ALLOWED THROUGH.
+       `textContent` was safe by construction; `innerHTML` is not. Her text is
+       model output and therefore untrusted — `tarot-cards.ts` states the rule
+       for this boundary — so every `&`, `<` and `>` is turned into an entity
+       BEFORE the two replacements run. After escaping there is no way to write
+       a tag, and the only tags in the result are the <strong> and <em> this
+       function itself inserts.
+
+       🔵 Bold before italic: `**x**` must be consumed before the single-star
+       rule sees it, or `**Past**` becomes an empty <em> wrapping `*Past*`. */
+    function markdownish(text) {
+        return String(text)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>")
+            /* ⚠️ THE STARS MUST HUG THEIR WORDS. Written as `[^*\n]+` first,
+               which turned "5 * 3 = 15 and 2 * 2" into one long italic — a
+               multiplication sign is not emphasis. So the opening star is
+               followed by a non-space and the closing star preceded by one. */
+            .replace(/(^|[\s(])\*(\S|\S[^*\n]*?\S)\*(?=[\s).,!?;:]|$)/g, "$1<em>$2</em>");
+    }
     function bubble(who, text) {
         var el = document.createElement("p");
         el.className = who === "you" ? "try-you" : "try-ru";
-        el.textContent = text;
+        /* The person's own words are never formatted — they did not write
+           markdown, and anything star-shaped in their question is theirs. */
+        if (who === "you") el.textContent = text;
+        else el.innerHTML = markdownish(text);
         out.appendChild(el);
         out.hidden = false;
     }

@@ -122,14 +122,54 @@
   dl.href = url.href;
   dl.setAttribute("download", title.replace(/[\\/:*?"<>|]+/g, " ").trim() || "document");
 
+  var main = document.getElementById("main");
+
+  /* ── 🔴 A PHONE DOES NOT RENDER A PDF IN A FRAME — 20 Nov 2026 ──────────
+     The first version of this page framed the PDF and sandboxed the frame
+     with `sandbox=""`. On a desktop that works. On Android Chrome there is no
+     inline PDF viewer for an iframe at all, so the founder got a page that
+     loaded and then did nothing: *"data room mai read pe jab gaye pdf open
+     karne ka button not working."* The empty sandbox made it worse — Chrome's
+     viewer needs scripting, and `sandbox=""` removes it.
+
+     So the phone gets a button, not a frame. Opening the signed link directly
+     hands the file to the system viewer, which is what a person on a phone
+     expects anyway. The frame stays for the desktop, where it is the nicer
+     thing, and the direct link stays visible there too — a frame that fails
+     silently is how this was missed in the first place. */
+  var onPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 760;
+
+  var open = document.createElement("a");
+  open.className = "btn";
+  open.href = url.href;
+  open.target = "_blank";
+  open.rel = "noopener noreferrer";
+  open.textContent = "Open PDF";
+  document.querySelector("header").insertBefore(open, dl);
+
+  if (onPhone) {
+    var box = document.createElement("div");
+    box.className = "msg";
+    var h = document.createElement("h2"); h.textContent = title;
+    var p = document.createElement("p");
+    p.textContent = "Tap to open the document. It opens in your phone's PDF viewer — the link is private and expires.";
+    var a = document.createElement("a");
+    a.className = "btn"; a.href = url.href; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.textContent = "Open PDF";
+    box.appendChild(h); box.appendChild(p); box.appendChild(a);
+    main.appendChild(box);
+    return;
+  }
+
   var frame = document.createElement("iframe");
   frame.src = url.href;
   frame.title = title;
-  /* No same-origin, no scripts: the document is a PDF, it needs neither, and
-     a storage host should not be running anything inside our page. */
-  frame.setAttribute("sandbox", "");
+  /* ⚠️ NOT SANDBOXED TO NOTHING. The host was already checked against our own
+     two Supabase projects above, which is the control that matters here; an
+     empty sandbox added no safety a validated host did not already give, and
+     it stopped the viewer from running. */
   frame.setAttribute("referrerpolicy", "no-referrer");
-  document.getElementById("main").appendChild(frame);
+  main.appendChild(frame);
 })();
 </script>
 </body>

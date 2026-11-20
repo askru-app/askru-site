@@ -902,10 +902,20 @@ async function loadAskRuTraction() {
             box.innerHTML = SOON;
             return;
         }
-        var wl = d.waitlist || {}, rd = d.readings || {}, u = d.unit || {}, of = d.offer || {};
+        var wl = d.waitlist || {}, rd = d.readings || {}, u = d.unit || {}, of = d.offer || {}, vs = d.visits || {};
         var html = [];
         var seatsTaken = Number(of.seats_taken || 0), seatsTotal = Number(of.seats_total || 0);
-        html.push('<div class="tr-grid">' + trStat(fmtInt(wl.total), "on the waiting list", "+" + fmtInt(wl.week) + " this week") + trStat(fmtInt(rd.total), "readings given", modeLine(rd.by_mode)) + trStat(seatsTotal ? fmtInt(Math.max(0, seatsTotal - seatsTaken)) : "—", "free readings left", seatsTotal ? fmtInt(seatsTaken) + " of " + fmtInt(seatsTotal) + " taken" : "") + trStat(of.weekly_months ? of.weekly_months + " months" : "—", "free weekly reading", (of.launch_at ? "from " + esc(fmtDay(of.launch_at)) : "from the day the app opens") + (of.tier2_max ? ", first " + fmtInt(of.tier2_max) : "")) + "</div>");
+        /* 🔴 VISITS AND THE UNIT COST FIRST — 20 Nov 2026, the founder asked for both
+           at the top of this section. They are read from the database on every
+           load, so an investor opening the room at any hour sees that hour's
+           numbers, not a figure somebody typed into the page.
+           ⚠️ The visit tile says "our own included" underneath, because
+           `askru_visit` has no internal flag and raw traffic presented as if it
+           were all strangers is the same defect as calling a test account a user. */
+        html.push('<div class="tr-grid">'
+          + trStat(fmtInt(vs.total), "visits to askru.in", (vs.devices ? fmtInt(vs.devices) + " devices" : "") + (vs.devices ? " · " : "") + "our own included")
+          + trStat(isFinite(Number(u.cost_rupees)) ? "₹" + Number(u.cost_rupees).toFixed(2) : "—", "cost of one reading", isFinite(Number(u.price_rupees)) ? "sells for ₹" + Number(u.price_rupees).toFixed(0) : "")
+          + trStat(fmtInt(wl.total), "on the waiting list", "+" + fmtInt(wl.week) + " this week") + trStat(fmtInt(rd.total), "readings given", modeLine(rd.by_mode)) + trStat(seatsTotal ? fmtInt(Math.max(0, seatsTotal - seatsTaken)) : "—", "free readings left", seatsTotal ? fmtInt(seatsTaken) + " of " + fmtInt(seatsTotal) + " taken" : "") + trStat(of.weekly_months ? of.weekly_months + " months" : "—", "free weekly reading", (of.launch_at ? "from " + esc(fmtDay(of.launch_at)) : "from the day the app opens") + (of.tier2_max ? ", first " + fmtInt(of.tier2_max) : "")) + "</div>");
         var cost = Number(u.cost_rupees), price = Number(u.price_rupees);
         if (isFinite(cost) && isFinite(price) && price > 0) {
             var scale = Math.max(cost, price);

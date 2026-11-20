@@ -3205,8 +3205,13 @@ if (reduce || !("IntersectionObserver" in window)) {
         deeperBtn.disabled = !angelTaken;
         if (deeperHint) {
           deeperHint.textContent = (langEl && langEl.value === "hinglish")
-            ? "Pehle angel bulaiye — wo aage ki reading ko raasta dikhayega."
-            : "Get the angel to guide further reading.";
+            /* ✏️ 20 Nov 2026, his words after using it: "jaha maine get the
+               angel click kiya waha likho for detailed reading get you angel".
+               The old line said what the angel would DO; this says what the
+               person gets. Same words as the app's `REVEALED.angelFirst`, so
+               the two surfaces do not drift. */
+            ? "Detailed reading ke liye apna angel bulaiye."
+            : "For a detailed reading, get your angel.";
           deeperHint.hidden = deeperBtn.hidden || angelTaken;
         }
         buyBox.hidden = true;

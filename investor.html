@@ -891,7 +891,31 @@ function loadAskRuPanels() {
     });
 }
 
-async function loadAskRuTraction() {
+/* 🔴 WHAT A READING COSTS A PERSON, IN FULL — 20 Nov 2026.
+       The page printed ONE price and called it "sells for", and the figure it
+       read was the PRE-LAUNCH one (₹31) while every investor mail said ₹51.
+       One product, two numbers — and the mail carried a link to the page that
+       disagreed with it. The founder set out the whole ladder, so the room
+       prints all of it: free before launch, ₹31 for another before launch,
+       ₹51 after, ₹101 for matchmaking.
+
+       ⚠️ EVERY FIGURE COMES FROM `config`, through the RPC. Not one price is
+       written into this page, so the day he changes a price the room changes
+       with it — rather than waiting for somebody to remember this line. */
+    function priceLadder(p) {
+        if (!p) return "Price is the one the database charges.";
+        var rs = function (paise) { return "₹" + (Number(paise) / 100).toFixed(0); };
+        var bits = [];
+        if (Number(p.free_before_launch) > 0) {
+            bits.push("Before the app launches, a reading is free — " + fmtInt(p.free_before_launch) + " each — and a further reading before launch is " + rs(p.before_launch_paise));
+        }
+        if (isFinite(Number(p.after_launch_paise))) bits.push("after launch a reading is " + rs(p.after_launch_paise));
+        if (isFinite(Number(p.match_paise))) bits.push("matchmaking is " + rs(p.match_paise));
+        if (!bits.length) return "Price is the one the database charges.";
+        return bits.join("; ") + ". The bar above is the price after launch.";
+    }
+
+    async function loadAskRuTraction() {
     var box = $("a-tr");
     try {
         var r = await rpc("askru_room_traction", {
@@ -919,7 +943,7 @@ async function loadAskRuTraction() {
         var cost = Number(u.cost_rupees), price = Number(u.price_rupees);
         if (isFinite(cost) && isFinite(price) && price > 0) {
             var scale = Math.max(cost, price);
-            html.push('<div class="tr-unit">' + '<div class="tr-bar dim"><span class="cap">Costs us</span>' + '<span class="track"><span class="fill" style="width:' + (100 * cost / scale).toFixed(1) + '%"></span></span>' + '<span class="val">₹' + cost.toFixed(2) + "</span></div>" + '<div class="tr-bar"><span class="cap">Sells for</span>' + '<span class="track"><span class="fill" style="width:100%"></span></span>' + '<span class="val">₹' + price.toFixed(0) + "</span></div>" + '<p class="sec-note" style="margin-top:10px">Cost is ' + esc(u.basis || "") + ", averaged over " + fmtInt(u.sample) + " readings. Price is the one the database charges.</p>" + "</div>");
+            html.push('<div class="tr-unit">' + '<div class="tr-bar dim"><span class="cap">Costs us</span>' + '<span class="track"><span class="fill" style="width:' + (100 * cost / scale).toFixed(1) + '%"></span></span>' + '<span class="val">₹' + cost.toFixed(2) + "</span></div>" + '<div class="tr-bar"><span class="cap">Sells for</span>' + '<span class="track"><span class="fill" style="width:100%"></span></span>' + '<span class="val">₹' + price.toFixed(0) + "</span></div>" + '<p class="sec-note" style="margin-top:10px">Cost is ' + esc(u.basis || "") + ", averaged over " + fmtInt(u.sample) + " readings. " + priceLadder(d.prices) + "</p>" + "</div>");
         }
         var days = wl.by_day || [];
         if (days.length > 1) {

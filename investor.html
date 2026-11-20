@@ -915,6 +915,28 @@ function loadAskRuPanels() {
         if (!p) return "Price is the one the database charges.";
         var rs = function (paise) { return "₹" + (Number(paise) / 100).toFixed(0); };
         var bits = [];
+        /* 🔴 ONE PRICE NOW — 20 Nov 2026. The founder removed the ₹31
+           pre-launch reading ("keep 51 rs only... hum actual price hi charge
+           karenge"), so offer.joiner_reading_paise and the app price are the
+           same figure. Left alone, the ladder printed it twice — "a further
+           reading before launch is X; after launch a reading is X" — which
+           reads like a room that has not noticed its own numbers.
+
+           ⚠️ IT COMPARES THE TWO FIGURES RATHER THAN HARD-CODING EITHER. The
+           day he splits them again this goes back to the two-line form on its
+           own, which is the whole point of nothing being written into this
+           page. */
+        var samePrice = isFinite(Number(p.before_launch_paise))
+          && isFinite(Number(p.after_launch_paise))
+          && Number(p.before_launch_paise) === Number(p.after_launch_paise);
+        if (samePrice) {
+          if (Number(p.free_before_launch) > 0) {
+            bits.push("Before the app launches, a reading is free — " + fmtInt(p.free_before_launch) + " each");
+          }
+          bits.push("a reading is " + rs(p.after_launch_paise) + ", before launch and after");
+          if (isFinite(Number(p.match_paise))) bits.push("matchmaking is " + rs(p.match_paise));
+          return bits.join("; ") + ". The bar above is that price.";
+        }
         if (Number(p.free_before_launch) > 0) {
             bits.push("Before the app launches, a reading is free — " + fmtInt(p.free_before_launch) + " each — and a further reading before launch is " + rs(p.before_launch_paise));
         }

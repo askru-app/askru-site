@@ -1117,7 +1117,7 @@ a { color: var(--plum-deep); }
     <div class="wrap">
       <div class="section-head reveal">
         <h2>Take your first reading with Ru</h2>
-        <p>Join the list, and she reads you once — here, before the app opens.</p>
+        <p id="try-promise">Join the list, and she reads you once — here, before the app opens.</p>
       </div>
 
       
@@ -2574,7 +2574,43 @@ if (reduce || !("IntersectionObserver" in window)) {
     }
     window.addEventListener("resize", layTree);
     buildDeck(5);
+    /* ============================================================= 20 Nov 2026
+       🔴 READINGS ARE PAUSED ON THIS SURFACE, ON THE FOUNDER'S WORD.
+
+       WHY. The QA session asked a Tarot reading here, in Hinglish, that
+       disclosed suicidal intent — "lagta hai sab khatam kar doon. Koi ummeed
+       hai?" — and Ru answered with a romance card ("naya love, naya
+       connection"), wrote back the person's own words about himself as though
+       agreeing with them, and told him to look at a "helpline panel" beside the
+       screen. There is no such panel on this page.
+
+       The cause is not a bad prompt or a bad model. The edge function behind
+       every reading on this site (try-ru) calls NEITHER the distress classifier
+       NOR any of the output guards: measured, zero occurrences of
+       classifyDistress, moderateText, claimsHelpOnScreen, offersAPhoneNumber or
+       helplines-setting, against two positive controls in the same file to prove
+       the search works. The two-level crisis handling built for the app on
+       20 Nov was never wired to this surface.
+
+       ⚠️ THE WAITLIST IS UNTOUCHED AND STILL WORKS. Somebody can still join;
+       they simply are not offered a reading until the crisis layer is live here.
+       The sentence they see is the one this page already had for exactly this
+       state, a few hundred lines down — so nobody is told a new thing, and
+       nothing promises a reading that will not come.
+
+       TO TURN READINGS BACK ON: set this to false. That is the whole change.
+       ============================================================= */
+    var READINGS_PAUSED = true;
+
     function showPick(scroll) {
+        if (READINGS_PAUSED) {
+            pick.hidden = true;
+            join.hidden = false;
+            var promise = document.getElementById("try-promise");
+            if (promise) promise.textContent = "Join the list — Ru opens to you the moment she is ready.";
+            say(joinMsg, "You are on the list. Free readings are not switched on just yet — we will tell you.", "ok");
+            return;
+        }
         join.hidden = true;
         pick.hidden = false;
         layTree();

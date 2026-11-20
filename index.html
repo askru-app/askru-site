@@ -2039,10 +2039,37 @@ if (reduce || !("IntersectionObserver" in window)) {
         }
     }).catch(function() {});
     function showBuyIfSpent() {
+        /* 🔴 L1 — THE ₹31 BUTTON WAS OUTSIDE THE PAUSE, AND IT TAKES MONEY.
+           Found by the QA session and confirmed by measuring the DOM: #try-buy
+           and #try-follow are NOT inside #try-pick, so hiding the reading flow
+           never touched them. The exposed person is a visitor who already used
+           their free reading and comes back now — moreOpen is false for them,
+           so they were offered "Read me again — ₹31", which opens a live
+           Razorpay link. They would pay, come back, and showPick would refuse
+           to open the reading. Money taken, nothing delivered.
+
+           ⚠️ GATED HERE RATHER THAN IN showPick, because this function has its
+           own way in: hasRead is set by showStreak(), which runs for any token
+           holder and does not go through showPick at all. A gate in showPick
+           would have looked complete and left this path open — which is exactly
+           how the first version of the pause went out. */
+        if (READINGS_PAUSED) {
+            buyBox.hidden = true;
+            if (follow) follow.hidden = true;
+            return;
+        }
         if (!hasRead || moreOpen) return;
         buyBox.hidden = false;
     }
     buyGo.addEventListener("click", function() {
+        /* 🔴 A SECOND LOCK ON THE SAME DOOR. The box is hidden above; this
+           refuses the click even if some other line un-hides it (the Razorpay
+           return handler un-hides try-modes directly, so "nothing else touches
+           this" is not an assumption worth making about a path that charges). */
+        if (READINGS_PAUSED) {
+            say(buyMsg, "Readings are paused for a moment — nothing to pay for. You are on the list and we will tell you the minute Ru opens.", "ok");
+            return;
+        }
         if (!token) return;
         buyGo.disabled = true;
         var was = buyGo.textContent;
@@ -2602,12 +2629,32 @@ if (reduce || !("IntersectionObserver" in window)) {
        ============================================================= */
     var READINGS_PAUSED = true;
 
+    /* 🔴 L2 — AND IT HAS TO BE SAID TO THE PEOPLE WHO HAVE NOT READ YET.
+       The first version rewrote the promise inside showPick(), which is only
+       reached from `if (token)`. So a RETURNING visitor — who already had their
+       reading — saw the honest line, and a FIRST-TIME visitor, who is the whole
+       audience of a join-the-list page, still read "Join the list, and she
+       reads you once". The fix was inverted: it told the truth to exactly the
+       people it did not matter to. Found by the QA session, in a fresh browser,
+       which is the path I did not test.
+
+       So it runs HERE, at load, before anything asks whether there is a token.
+       The heading goes with it: "Take your first reading with Ru" is the same
+       promise in bigger type. */
+    (function sayWhatIsTrue() {
+        if (!READINGS_PAUSED) return;
+        var promise = document.getElementById("try-promise");
+        if (promise) promise.textContent = "Join the list — Ru opens to you the moment she is ready.";
+        var head = promise && promise.parentNode ? promise.parentNode.querySelector("h2") : null;
+        if (head) head.textContent = "Be first in line for a reading with Ru";
+    })();
+
     function showPick(scroll) {
         if (READINGS_PAUSED) {
             pick.hidden = true;
             join.hidden = false;
-            var promise = document.getElementById("try-promise");
-            if (promise) promise.textContent = "Join the list — Ru opens to you the moment she is ready.";
+            /* The promise and the heading are rewritten at load now — see
+               sayWhatIsTrue() above, and L2 for why it cannot live here. */
             say(joinMsg, "You are on the list. Free readings are not switched on just yet — we will tell you.", "ok");
             return;
         }

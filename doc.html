@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- 🔴 NEVER INDEX. This page only ever holds a signed, expiring link to an
+     investor document. It is reached from inside the data room and from
+     nowhere else. -->
+<meta name="robots" content="noindex, nofollow, noarchive" />
+<title>Document — Ask Ru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root { --ink: #fff; --bg: #120a11; --accent: #ff9db0; --cream: #f3d29a; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04); flex: 0 0 auto;
+  }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; font-weight: 600;
+    margin: 0; line-height: 1.3; flex: 1 1 auto;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  a.btn, button.btn {
+    font: inherit; font-size: .9rem; text-decoration: none; cursor: pointer;
+    padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+    border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.07); color: var(--ink);
+  }
+  a.btn:hover, button.btn:hover { border-color: var(--accent); color: var(--accent); }
+  main { flex: 1 1 auto; min-height: 0; display: flex; }
+  iframe { flex: 1 1 auto; width: 100%; height: 100%; border: 0; background: #1b1019; }
+  .msg { margin: auto; max-width: 440px; padding: 32px 24px; text-align: center; line-height: 1.6; }
+  .msg h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.2rem; margin: 0 0 10px; color: var(--cream); }
+  .msg p { margin: 0 0 16px; color: rgba(255,255,255,.75); font-size: .95rem; }
+  @media (max-width: 520px) { h1 { font-size: .95rem; } a.btn, button.btn { padding: 7px 11px; font-size: .85rem; } }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">Document</h1>
+  <a class="btn" id="dl" download>Download</a>
+  <a class="btn" href="investor.html">Back</a>
+</header>
+<main id="main"></main>
+
+<script>
+/* ──────────────────────────────────────────────────────────────────────────
+   🔴 THIS PAGE DID NOT EXIST UNTIL 20 NOVEMBER 2026.
+
+   `investor.html` has rendered a Read button for every PDF for as long as the
+   data room has had documents:
+
+       <a href="doc.html?u=…&t=…">Read</a>
+
+   and `doc.html` was never written. Not on disk, not in git, not deployed. So
+   every Read in the room answered 404, for every investor who clicked one,
+   while Download — a different code path — worked. The founder found it:
+   *"jab read pe click kar raha hu to 404 de raha hai download ho raha hai."*
+
+   ⚠️ IT WAS INVISIBLE FROM INSIDE THE ROOM. The room's own checks ask whether
+   the documents are there and whether the links are signed. Both were true.
+   Nothing asked whether the page the Read button points AT exists — a link is
+   not a page, and the room never followed its own.
+
+   ── 🔴 WHY THE URL IS CHECKED BEFORE IT IS USED ─────────────────────────
+   `u` arrives in the query string, so it is whatever is in the link somebody
+   clicked. Framing it unchecked would let a crafted link put any site inside
+   a page on our domain, wearing our header — and an investor would have no
+   way to tell. So the only thing this page will open is an https URL whose
+   host is our own Supabase storage. Anything else gets the refusal below and
+   is never put in the DOM.
+   ────────────────────────────────────────────────────────────────────────── */
+(function () {
+  var OUR_HOSTS = ["zoceydoogxrpmmlxwhvd.supabase.co", "hyxkhjxrpsmjztbdtcee.supabase.co"];
+  var qs = new URLSearchParams(location.search);
+  var raw = qs.get("u") || "";
+  var title = qs.get("t") || "Document";
+
+  /* textContent, never innerHTML — the title is somebody else's string too. */
+  document.getElementById("title").textContent = title;
+  document.title = title + " — Ask Ru";
+
+  function refuse(heading, body) {
+    var m = document.getElementById("main");
+    var box = document.createElement("div");
+    box.className = "msg";
+    var h = document.createElement("h2"); h.textContent = heading;
+    var p = document.createElement("p"); p.textContent = body;
+    var a = document.createElement("a"); a.className = "btn"; a.href = "investor.html";
+    a.textContent = "Back to the data room";
+    box.appendChild(h); box.appendChild(p); box.appendChild(a);
+    m.appendChild(box);
+    document.getElementById("dl").remove();
+  }
+
+  var url = null;
+  try { url = new URL(raw); } catch (e) { url = null; }
+
+  if (!url || url.protocol !== "https:" || OUR_HOSTS.indexOf(url.hostname) < 0) {
+    refuse(
+      raw ? "That link is not one of ours" : "No document in this link",
+      raw
+        ? "This page only opens documents stored on our own servers. Open the document from the data room rather than from a copied link."
+        : "Open the document from the data room and it will arrive with its link."
+    );
+    return;
+  }
+
+  /* A signed link carries its own expiry. When it has run out the storage
+     host answers with an error rather than the file, and the frame shows that
+     — which is the honest outcome: the link expired, the room still works. */
+  var dl = document.getElementById("dl");
+  dl.href = url.href;
+  dl.setAttribute("download", title.replace(/[\\/:*?"<>|]+/g, " ").trim() || "document");
+
+  var frame = document.createElement("iframe");
+  frame.src = url.href;
+  frame.title = title;
+  /* No same-origin, no scripts: the document is a PDF, it needs neither, and
+     a storage host should not be running anything inside our page. */
+  frame.setAttribute("sandbox", "");
+  frame.setAttribute("referrerpolicy", "no-referrer");
+  document.getElementById("main").appendChild(frame);
+})();
+</script>
+</body>
+</html>

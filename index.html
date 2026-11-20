@@ -3719,7 +3719,26 @@ if (reduce || !("IntersectionObserver" in window)) {
     var p = day.panchang;
     if (p && p.tithi) {
       var pk = p.paksha === "shukla" ? "Shukla " : p.paksha === "krishna" ? "Krishna " : "";
-      out.appendChild(el("p", "try-mu-head", "At sunrise — tithi: " + pk + p.tithi + (p.nakshatra ? " · nakshatra: " + p.nakshatra : "")));
+      /* 🔴 AND WHEN EACH OF THEM STOPS BEING TRUE — 20 Nov 2026.
+
+         The QA session read this line at 7pm and was told "nakshatra: Purva
+         Bhadrapada". It was correct at sunrise and had ended at 6:56am; Uttara
+         Bhadrapada ran the other twelve hours. Naming the day by its sunrise
+         tithi is proper convention, so the words were not wrong — but with no
+         end time, an evening visitor reads a limb that stopped before
+         breakfast. Every published panchang prints "upto …, then …".
+
+         ⚠️ A null end is a real answer, not a gap: a long tithi can outlast
+         the whole day, and then there is no time to print. The server sends
+         null for that case and this prints nothing extra rather than a guess. */
+      var e = day.ends || {};
+      var upto = function (ms, after) {
+        if (!ms) return "";
+        return " upto " + f(ms) + (after ? ", then " + after : "");
+      };
+      out.appendChild(el("p", "try-mu-head",
+        "At sunrise — tithi: " + pk + p.tithi + upto(e.tithiEndsMs, e.tithiAfter)
+        + (p.nakshatra ? " · nakshatra: " + p.nakshatra + upto(e.nakshatraEndsMs, e.nakshatraAfter) : "")));
     }
 
     var ul = el("ul", "try-mu-list");

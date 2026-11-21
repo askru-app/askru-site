@@ -3843,10 +3843,27 @@ if (reduce || !("IntersectionObserver" in window)) {
     return e;
   }
   function clock(ms, tz, off) {
+    /* 🔴 TO THE NEAREST MINUTE, BECAUSE THE APP DOES — 21 Nov 2026.
+       `Intl.DateTimeFormat` TRUNCATES: 12:27:40 prints as 12:27. The app's
+       `clock()` rounds, deliberately and with its reason written down — the
+       founder's instruction on the panchang tables was "best panchang find
+       karo ussi mila do", and a published table prints 06:25 where truncation
+       gives 06:24.
+
+       So one computed instant was being printed by two different rules on two
+       surfaces, and the same Abhijit could read a minute apart depending on
+       which of our own screens you looked at. The QA session caught the two
+       disagreeing on the same day. Whichever number is right, a reader who
+       compares them sees us disagree with ourselves — so there is one rule
+       now, and it is the app's, because that one has a reason behind it. */
+    var at = Math.round(ms / 60000) * 60000;
     try {
-      return new Intl.DateTimeFormat("en-IN", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true }).format(new Date(ms));
+      return new Intl.DateTimeFormat("en-IN", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true }).format(new Date(at));
     } catch (e) {
-      var d = new Date(ms + (off || 0) * 1000), h = d.getUTCHours(), m = d.getUTCMinutes();
+      /* The same rounded instant as the path above. A fallback that rounds
+         differently from the normal path is the original defect, hiding in
+         the branch nobody looks at. */
+      var d = new Date(at + (off || 0) * 1000), h = d.getUTCHours(), m = d.getUTCMinutes();
       return ((h % 12) || 12) + ":" + (m < 10 ? "0" : "") + m + (h < 12 ? " am" : " pm");
     }
   }

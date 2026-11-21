@@ -441,7 +441,7 @@
       </section>
 
       <section class="sec" aria-labelledby="bs-t-h">
-        <div class="sec-head"><h2 id="bs-t-h">Build status</h2><span class="cadence">🗓 Updated every Tuesday</span></div>
+        <div class="sec-head"><h2 id="bs-t-h">Build status</h2></div>
         <p class="sec-note">Milestones towards launch. The launch date is being re-planned (see the update above). Achieved means built and checked in our records; dates are when that happened.</p>
         <div id="t-bs" aria-live="polite"><span class="muted">Loading…</span></div>
         <div class="sub-sec">
@@ -491,7 +491,7 @@
       </section>
 
       <section class="sec" aria-labelledby="bs-a-h">
-        <div class="sec-head"><h2 id="bs-a-h">Build status</h2><span class="cadence">🗓 Updated every Tuesday</span></div>
+        <div class="sec-head"><h2 id="bs-a-h">Build status</h2></div>
         <p class="sec-note">Milestones towards the app being ready by November 2026. Achieved means built and checked in our records; dates are when that happened.</p>
         <div id="a-bs" aria-live="polite"><span class="muted">Loading…</span></div>
       </section>
@@ -907,7 +907,7 @@ async function loadAskRu() {
                 var fn = (/^Ask-Ru/i.test(slug) ? slug : "Ask-Ru-" + slug) + ".mp4";
                 return '<div class="vid-panel" id="ar-panel-' + i + '"' + (many ? ' role="tabpanel" aria-labelledby="ar-tab-' + i + '"' : "") + (i === 0 ? "" : " hidden") + ">" +
                     '<div class="vid-wrap"><video id="ar-video-' + i + '" controls preload="metadata" playsinline src="' + esc(u) + '"></video>' +
-                    '<div class="vid-meta"><span><b>' + esc(v.title || "") + "</b> " + esc(v.subtitle || "") + "</span>" +
+                    '<div class="vid-meta">' +
                     '<a href="' + esc(u) + '" download="' + esc(fn) + '" data-vlog="' + i + '">Download video</a>' + "</div></div></div>";
             }).join("");
             $("askru-video-sec").hidden = false;

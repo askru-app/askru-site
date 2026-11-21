@@ -251,6 +251,17 @@
     .vid-wrap{border:1px solid var(--border);border-radius:20px;overflow:hidden;
       background:#120a11;box-shadow:0 26px 70px rgba(124,92,255,.2)}
     .vid-wrap video{display:block;width:100%;height:auto;background:#120a11}
+    /* One film at a time, chosen by the reader — the founder's call, 21 Nov 2026.
+       Stacking both players made the page long and made the investor scroll past
+       the one they did not want. Tabs only appear when there is more than one. */
+    .vid-tabs{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap}
+    .vid-tabs button{appearance:none;cursor:pointer;font:inherit;font-size:.82rem;
+      background:transparent;color:var(--ink-3);border:1px solid var(--border);
+      border-radius:999px;padding:8px 16px}
+    .vid-tabs button:hover{color:#fff;border-color:var(--border-glow)}
+    .vid-tabs button[aria-selected="true"]{color:#fff;border-color:var(--border-glow);
+      background:rgba(124,92,255,.18)}
+    .vid-panel[hidden]{display:none}
     .vid-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
       padding:11px 16px;border-top:1px solid var(--border);font-size:.82rem;color:var(--ink-3)}
     .vid-meta a{color:var(--ink-2);text-decoration:none;border:1px solid var(--border);
@@ -861,16 +872,62 @@ async function loadAskRu() {
             return x.category === "Video";
         });
         if (avids.length) {
-            $("askru-video-slot").innerHTML = avids.map(function(v, i) {
+            /* ── 🔴 ONE FILM AT A TIME, THE READER CHOOSES — 21 Nov 2026 ──
+               FOUNDER: *"waha tab de dena — ek tarah showreel and ek taraf
+               deck, ki investor switch kar sake jo usko dekhna hai"*.
+
+               Before this both players were stacked, so an investor who wanted
+               the deck film scrolled past the showreel to reach it, and the
+               section was two screens tall on a phone.
+
+               ⚠️ SWITCHING PAUSES THE ONE YOU LEAVE. Two <video> elements on a
+               page both keep playing when one is hidden, so without this a
+               reader who switched tabs would hear the showreel talking under
+               the deck. Hiding a player is not stopping it.
+
+               🔵 THE TABS ONLY EXIST WHEN THERE IS SOMETHING TO SWITCH
+               BETWEEN. With one film a tab strip is a control that does
+               nothing, and the labels come from each row's own title, so the
+               room cannot label a film something the document list does not. */
+            var slot = $("askru-video-slot");
+            var many = avids.length > 1;
+            var tabs = !many ? "" : '<div class="vid-tabs" role="tablist" aria-label="Which film to watch">' + avids.map(function(v, i) {
+                return '<button type="button" role="tab" id="ar-tab-' + i + '" aria-controls="ar-panel-' + i + '"' +
+                    ' aria-selected="' + (i === 0 ? "true" : "false") + '" tabindex="' + (i === 0 ? "0" : "-1") + '">' +
+                    esc(v.title || ("Film " + (i + 1))) + "</button>";
+            }).join("") + "</div>";
+            slot.innerHTML = tabs + avids.map(function(v, i) {
                 var u = bust(v.url);
-                /* A filename, not a title — no spaces, slashes or quotes. */
-                var fn = "Ask-Ru-" + String(v.title || "video").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "") + ".mp4";
-                return '<div class="vid-wrap"><video id="ar-video-' + i + '" controls preload="metadata" playsinline src="' + esc(u) + '"></video>' + '<div class="vid-meta"><span><b>' + esc(v.title || "") + "</b> " + esc(v.subtitle || "") + "</span>" + '<a href="' + esc(u) + '" download="' + esc(fn) + '" data-vlog="' + i + '">Download video</a>' + "</div></div>";
+                /* A filename, not a title — no spaces, slashes or quotes.
+                   And the prefix is only added when the title does not already
+                   carry it: the showreel row is called "Ask Ru Showreel", which
+                   came out as "Ask-Ru-Ask-Ru-Showreel.mp4" in an investor's
+                   downloads folder. */
+                var slug = String(v.title || "video").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+                var fn = (/^Ask-Ru/i.test(slug) ? slug : "Ask-Ru-" + slug) + ".mp4";
+                return '<div class="vid-panel" id="ar-panel-' + i + '"' + (many ? ' role="tabpanel" aria-labelledby="ar-tab-' + i + '"' : "") + (i === 0 ? "" : " hidden") + ">" +
+                    '<div class="vid-wrap"><video id="ar-video-' + i + '" controls preload="metadata" playsinline src="' + esc(u) + '"></video>' +
+                    '<div class="vid-meta"><span><b>' + esc(v.title || "") + "</b> " + esc(v.subtitle || "") + "</span>" +
+                    '<a href="' + esc(u) + '" download="' + esc(fn) + '" data-vlog="' + i + '">Download video</a>' + "</div></div></div>";
             }).join("");
             $("askru-video-sec").hidden = false;
+
+            function showFilm(n) {
+                avids.forEach(function(v, i) {
+                    var panel = $("ar-panel-" + i), tab = $("ar-tab-" + i), vid = $("ar-video-" + i);
+                    if (panel) panel.hidden = i !== n;
+                    if (tab) {
+                        tab.setAttribute("aria-selected", i === n ? "true" : "false");
+                        tab.tabIndex = i === n ? 0 : -1;
+                    }
+                    /* The one being left stops making noise. */
+                    if (vid && i !== n && !vid.paused) try { vid.pause(); } catch (e) {}
+                });
+            }
+
             avids.forEach(function(v, i) {
                 var label = "Ask Ru — " + (v.title || "video");
-                var a = $("askru-video-slot").querySelector('[data-vlog="' + i + '"]');
+                var a = slot.querySelector('[data-vlog="' + i + '"]');
                 if (a) a.addEventListener("click", function() {
                     logDoc("Download", label + " (video)");
                 });
@@ -879,7 +936,26 @@ async function loadAskRu() {
                     av.removeEventListener("play", once);
                     logDoc("Watched", label);
                 });
+                var tab = $("ar-tab-" + i);
+                if (tab) {
+                    tab.addEventListener("click", function() {
+                        showFilm(i);
+                        logDoc("Opened", label + " (video)");
+                    });
+                    /* Arrow keys, because a tablist a keyboard cannot move
+                       through is a tablist in name only. */
+                    tab.addEventListener("keydown", function(e) {
+                        var step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+                        if (!step) return;
+                        e.preventDefault();
+                        var n = (i + step + avids.length) % avids.length;
+                        showFilm(n);
+                        var t = $("ar-tab-" + n);
+                        if (t) t.focus();
+                    });
+                }
             });
+
             d.docs = d.docs.filter(function(x) {
                 return avids.indexOf(x) < 0;
             });

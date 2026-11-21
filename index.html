@@ -2726,6 +2726,21 @@ if (reduce || !("IntersectionObserver" in window)) {
        ============================================================= */
     var READINGS_PAUSED = true;
 
+    /* Our own preview while readings are paused. The link carries a key once,
+       the key is kept on this browser, and the reading panel opens here and
+       nowhere else. It is a convenience for testing, not a control: the
+       server decides what it serves, and this only moves the UI.
+       The key is dropped from the address bar as soon as it is stored, so it
+       is not left in history, in a shared link or in a referrer. */
+    try {
+      var _pv = location.hash.match(/^#preview=([A-Za-z0-9_-]{6,64})$/);
+      if (_pv) {
+        localStorage.setItem("askru_preview", _pv[1]);
+        history.replaceState(null, "", location.pathname + location.search);
+      }
+      if (localStorage.getItem("askru_preview") === "B68rJQB8QtM2") READINGS_PAUSED = false;
+    } catch (e) {}
+
     /* 🔴 L2 — AND IT HAS TO BE SAID TO THE PEOPLE WHO HAVE NOT READ YET.
        The first version rewrote the promise inside showPick(), which is only
        reached from `if (token)`. So a RETURNING visitor — who already had their

@@ -1922,6 +1922,27 @@ if (reduce || !("IntersectionObserver" in window)) {
     var emailEl = document.getElementById("try-email");
     var phoneEl = document.getElementById("try-phone");
     var langEl = document.getElementById("try-lang");
+    /* 🔴 THE CHOICE HAS TO SURVIVE A RELOAD — the page promises it does.
+       A few hundred lines up it says "English or Hinglish — you choose, and
+       she stays in it". She did not: the select went back to English on every
+       reload and on every return visit, and nothing was stored anywhere.
+
+       ⚠️ IT MATTERS MORE THAN IT LOOKS. Hinglish is where our output is
+       weakest and it is the path with almost no real traffic — so a silent
+       reset to English is part of how that stays true. We would keep shipping
+       a language almost nobody had exercised.
+
+       Every reader in this file goes through `langEl.value`, so restoring the
+       element is the whole fix; there is no second copy to keep in step. The
+       stored value is checked against the two we accept, because anything
+       else here ends up in a request body. */
+    try {
+      var _lang = localStorage.getItem("askru_lang");
+      if (langEl && (_lang === "en" || _lang === "hinglish")) langEl.value = _lang;
+    } catch (e) {}
+    if (langEl) langEl.addEventListener("change", function () {
+      try { localStorage.setItem("askru_lang", langEl.value); } catch (e) {}
+    });
     function withLang(b) {
         b.language = langEl && langEl.value || "en";
         return b;
@@ -1946,18 +1967,33 @@ if (reduce || !("IntersectionObserver" in window)) {
         /* Read takes the panel down with it. So it only goes down once there is
            something to come back up — otherwise it stays, and says why. */
         if (!cardsWanted && !readyToAsk()) {
-            say(ritualMsg, prashna ? "Ru needs the place you are asking from first — it is just above." : "Ru needs your date, time and place of birth first — they are just above.", "bad");
+            /* 🔴 SAY WHAT IS ACTUALLY ABOVE — 21 Nov 2026.
+               The message named the birth FIELDS and the focus went to the
+               first empty one. But before the yes/no question is answered,
+               `#try-birth-fields` is display:none inside a VISIBLE
+               `#try-birth`, so there is no visible field: the focus correctly
+               did nothing and the sentence pointed at boxes nobody could see.
+               What is just above in that state is the question itself. So the
+               words and the focus both follow whichever is on screen, read
+               from the page rather than assumed. */
             var first = [ "try-dob", "try-tob", "try-pob" ].map(function(id) {
                 return document.getElementById(id);
             }).filter(function(el) {
                 return el && el.offsetParent !== null && !el.value;
             })[0];
-            if (first) try {
-                first.scrollIntoView({
+            var ask = document.getElementById("try-birth-ask");
+            var askOpen = !first && ask && ask.offsetParent !== null;
+            say(ritualMsg,
+                askOpen ? "Tell Ru first whether you know your birth details — the question is just above."
+                : prashna ? "Ru needs the place you are asking from first — it is just above."
+                : "Ru needs your date, time and place of birth first — they are just above.", "bad");
+            var target = first || (askOpen ? document.getElementById("try-birth-yes") : null);
+            if (target) try {
+                target.scrollIntoView({
                     behavior: "smooth",
                     block: "center"
                 });
-                first.focus();
+                target.focus();
             } catch (e) {}
             return;
         }
@@ -2724,7 +2760,7 @@ if (reduce || !("IntersectionObserver" in window)) {
        person reading it. Engineering history, incidents, and anything about how
        a safety control is built belong in the private repo.
        ============================================================= */
-    var READINGS_PAUSED = true;
+    var READINGS_PAUSED = false;
 
     /* Our own preview while readings are paused. The link carries a key once,
        the key is kept on this browser, and the reading panel opens here and

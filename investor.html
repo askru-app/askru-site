@@ -847,23 +847,41 @@ async function loadAskRu() {
             return d && d.ok === true;
         }
         loaded.askru = true;
-        var avid = d.docs.filter(function(x) {
+        /* 🔴 THE ROOM CAN HOLD MORE THAN ONE FILM — 21 Nov 2026.
+           This read `filter(...)[0]`, so the section played the FIRST video row
+           and every other one fell through to the document list below — where a
+           non-PDF row gets only a Download button and no way to watch. So a
+           second film was either invisible as a film, or, if it sorted first,
+           it took the slot from the showreel. Worse quietly: the download
+           filename and the two log labels were the literal word "Showreel",
+           so whichever film an investor opened, the room recorded the other.
+           Everything per-video now, and every label comes from the row's own
+           title rather than from this file. */
+        var avids = d.docs.filter(function(x) {
             return x.category === "Video";
-        })[0];
-        if (avid) {
-            var aurl = bust(avid.url);
-            $("askru-video-slot").innerHTML = '<div class="vid-wrap"><video id="ar-video" controls preload="metadata" playsinline src="' + esc(aurl) + '"></video>' + '<div class="vid-meta"><span>' + esc(avid.subtitle || "") + "</span>" + '<a href="' + esc(aurl) + '" download="Ask-Ru-Showreel.mp4" data-log="Ask Ru — Showreel (video)">Download video</a>' + "</div></div>";
+        });
+        if (avids.length) {
+            $("askru-video-slot").innerHTML = avids.map(function(v, i) {
+                var u = bust(v.url);
+                /* A filename, not a title — no spaces, slashes or quotes. */
+                var fn = "Ask-Ru-" + String(v.title || "video").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "") + ".mp4";
+                return '<div class="vid-wrap"><video id="ar-video-' + i + '" controls preload="metadata" playsinline src="' + esc(u) + '"></video>' + '<div class="vid-meta"><span><b>' + esc(v.title || "") + "</b> " + esc(v.subtitle || "") + "</span>" + '<a href="' + esc(u) + '" download="' + esc(fn) + '" data-vlog="' + i + '">Download video</a>' + "</div></div>";
+            }).join("");
             $("askru-video-sec").hidden = false;
-            $("askru-video-slot").querySelector("[data-log]").addEventListener("click", function() {
-                logDoc("Download", "Ask Ru — Showreel (video)");
-            });
-            var av = $("ar-video");
-            if (av) av.addEventListener("play", function once() {
-                av.removeEventListener("play", once);
-                logDoc("Watched", "Ask Ru — Showreel");
+            avids.forEach(function(v, i) {
+                var label = "Ask Ru — " + (v.title || "video");
+                var a = $("askru-video-slot").querySelector('[data-vlog="' + i + '"]');
+                if (a) a.addEventListener("click", function() {
+                    logDoc("Download", label + " (video)");
+                });
+                var av = $("ar-video-" + i);
+                if (av) av.addEventListener("play", function once() {
+                    av.removeEventListener("play", once);
+                    logDoc("Watched", label);
+                });
             });
             d.docs = d.docs.filter(function(x) {
-                return x !== avid;
+                return avids.indexOf(x) < 0;
             });
         }
         box.innerHTML = docListHtml(d.docs.map(function(x) {

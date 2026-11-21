@@ -509,6 +509,13 @@ h2 {
   transition: background .12s ease, border-color .12s ease; }
 .try-practice .em { font-size: 17px; line-height: 1; }
 .try-practice[aria-pressed="true"] { background: var(--plum); border-color: var(--plum); color: #fff; }
+/* 🔴 ARMED IS NOT MARKED. The filled pill above says "you did this today" and
+   is the saved state; this one says "tap again to confirm" and has saved
+   nothing yet. One style for both is what made the panel read as though a
+   first tap had been recorded. */
+.try-practice.is-armed { border-color: var(--plum); border-style: dashed; border-width: 2px; }
+.try-practice.is-done { cursor: default; opacity: 1; }
+.try-practice:disabled:not(.is-done) { opacity: .6; cursor: progress; }
 
 
 .try-more { text-align: left; }
@@ -552,6 +559,10 @@ h2 {
   border-radius: 20px; padding: 22px;
 }
 .try-row { display: grid; gap: 10px; margin-bottom: 10px; }
+.try-lang-row { display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin: 0 0 14px; font-size: 14px; color: var(--ink-muted); }
+.try-lang-row select { min-height: 40px; }
+@media (max-width: 420px) { .try-lang-row { flex-wrap: wrap; } }
 @media (min-width: 560px) { .try-row { grid-template-columns: 1fr 1fr; } }
 .try-panel input, .try-panel select, .try-panel textarea {
   width: 100%; min-height: 52px; padding: 0 16px;
@@ -1118,6 +1129,13 @@ a { color: var(--plum-deep); }
       <div class="section-head reveal">
         <h2>Take your first reading with Ru</h2>
         <p id="try-promise">Join the list, and she reads you once — here, before the app opens.</p>
+        <p class="try-lang-row">
+          <label for="try-lang">Ru writes in</label>
+          <select id="try-lang" aria-label="The language Ru writes to you in">
+            <option value="en">English</option>
+            <option value="hinglish">Hinglish</option>
+          </select>
+        </p>
       </div>
 
       
@@ -1131,10 +1149,12 @@ a { color: var(--plum-deep); }
         <div class="try-row">
           <input id="try-phone" type="tel" name="mobile" inputmode="tel" autocomplete="tel"
                  placeholder="Phone (optional)" aria-label="Your phone number, optional">
-          <select id="try-lang" aria-label="The language Ru writes to you in">
-            <option value="en">English</option>
-            <option value="hinglish">Hinglish</option>
-          </select>
+          <!-- 🔴 The language Ru writes in used to sit here, inside this form. The
+               form is hidden the instant somebody joins, and a returning visitor
+               never sees it at all — so the one control that chose the language of
+               every reading was unreachable by everyone who had a reading to take.
+               It now lives at the top of the reading panel, which stays on screen.
+               Still ONE node, read by both the join call and the reading. -->
         </div>
         <p class="try-unlock"><strong>What joining unlocks:</strong> one free reading right here — Vedic, Tarot or Oracle — today&rsquo;s Muhurat for your city, a place among the first 1,000 who read free, and — if you are among the first 10,000 to join — one free reading every week in the app.</p>
 
@@ -1169,6 +1189,14 @@ a { color: var(--plum-deep); }
         </div>
 
         
+        <!-- 🔴 THIS IS THE VEDIC BLOCK, AND IT SITS IN THE SHARED PANEL.
+             A grep for "date, time and place of birth" lands here, inside
+             #try-pick, which also holds the Tarot and Oracle controls — and it
+             reads as though a card reading asks for a chart. It does not: the
+             mode handler sets `birth.hidden = chosen !== "vedic"`, so this whole
+             block is hidden for every mode but Vedic, and `readyToAsk()` only
+             consults these fields when cardsWanted is false.
+             Said out loud because it has twice been read the other way. -->
         <div class="try-birth" id="try-birth" hidden>
           
           <div id="try-birth-ask">
@@ -1210,6 +1238,7 @@ a { color: var(--plum-deep); }
             <li>Say your question to yourself, silently.</li>
           </ol>
           <p class="closing" id="try-ritual-closing">Then pick your card.</p>
+          <p class="wl-msg" id="try-ritual-msg" role="status" aria-live="polite"></p>
           <button class="btn btn-primary" type="button" id="try-ritual-go">Pick my card</button>
         </div>
 
@@ -1911,11 +1940,32 @@ if (reduce || !("IntersectionObserver" in window)) {
     var ritual = document.getElementById("try-ritual");
     var ritualGo = document.getElementById("try-ritual-go");
     var ritualClosing = document.getElementById("try-ritual-closing");
+    var ritualMsg = document.getElementById("try-ritual-msg");
     var cardsWanted = false;
     ritualGo.addEventListener("click", function() {
+        /* Read takes the panel down with it. So it only goes down once there is
+           something to come back up — otherwise it stays, and says why. */
+        if (!cardsWanted && !readyToAsk()) {
+            say(ritualMsg, prashna ? "Ru needs the place you are asking from first — it is just above." : "Ru needs your date, time and place of birth first — they are just above.", "bad");
+            var first = [ "try-dob", "try-tob", "try-pob" ].map(function(id) {
+                return document.getElementById(id);
+            }).filter(function(el) {
+                return el && el.offsetParent !== null && !el.value;
+            })[0];
+            if (first) try {
+                first.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+                first.focus();
+            } catch (e) {}
+            return;
+        }
+        say(ritualMsg, "");
         ritual.hidden = true;
         cards.hidden = !cardsWanted;
         if (cardsWanted) layTree();
+        if (!cardsWanted) gateAsk();
         try {
             (cardsWanted ? cards : askForm).scrollIntoView({
                 behavior: "smooth",
@@ -1955,6 +2005,10 @@ if (reduce || !("IntersectionObserver" in window)) {
         token = null;
     }
     function say(el, text, kind) {
+        /* A missing node must not take the handler down with it: say() is called
+           from inside click handlers, and a thrown TypeError there leaves the
+           screen frozen mid-step with no error anyone can see. */
+        if (!el) return;
         el.textContent = text || "";
         el.className = "wl-msg" + (kind ? " " + kind : "");
     }
@@ -2060,7 +2114,7 @@ if (reduce || !("IntersectionObserver" in window)) {
     }).catch(function() {});
     function showBuyIfSpent() {
         /* 🔴 L1 — THE ₹31 BUTTON WAS OUTSIDE THE PAUSE, AND IT TAKES MONEY.
-           Found by the QA session and confirmed by measuring the DOM: #try-buy
+           Measured on the rendered page: #try-buy
            and #try-follow are NOT inside #try-pick, so hiding the reading flow
            never touched them. The exposed person is a visitor who already used
            their free reading and comes back now — moreOpen is false for them,
@@ -2245,6 +2299,30 @@ if (reduce || !("IntersectionObserver" in window)) {
                 practicesRow.appendChild(btn);
             }
         }
+        /* 🔴 WHAT WAS ALREADY MARKED TODAY — 20 Nov 2026.
+           `askru_try_streak` answers `today: true` when ANYTHING was marked, but
+           never says WHICH, so a reload drew every button unmarked under a
+           heading that read "marked for today". The server is being given a
+           `marked_today` list; until that lands this reads an absent field as
+           "nothing known", never as "nothing marked", so the page is honest on
+           both sides of that change. */
+        var done = b.marked_today;
+        if (Array.isArray(done)) for (var k = 0; k < done.length; k++) markDone(done[k]);
+    }
+    /* THE ONLY THING `aria-pressed` IS ALLOWED TO MEAN: marked for today.
+       It used to also mean "armed, tap again to confirm", so a screen reader
+       heard "pressed" for a tap that had saved nothing — and arming a second
+       practice cleared the first one's "true", wiping a mark the server had
+       already stored. Arming now wears its own attribute. */
+    function markDone(key) {
+        var el = practicesRow.querySelector('.try-practice[data-practice="' + String(key).replace(/"/g, "") + '"]');
+        if (!el) return;
+        el.setAttribute("aria-pressed", "true");
+        el.classList.add("is-done");
+        el.classList.remove("is-armed");
+        el.removeAttribute("data-armed");
+        el.disabled = true;
+        el.title = "Marked for today";
     }
     function showStreak() {
         if (streakDrawn || !token) return;
@@ -2270,17 +2348,23 @@ if (reduce || !("IntersectionObserver" in window)) {
         var b = e.target.closest(".try-practice");
         if (!b || !token) return;
         var key = b.getAttribute("data-practice");
+        if (b.disabled || b.getAttribute("aria-pressed") === "true") return;
         if (pickedPractice !== key) {
             pickedPractice = key;
+            /* Arming clears only the ARMED mark on the others. Their
+               `aria-pressed` is a saved fact and is not ours to touch. */
             Array.prototype.forEach.call(practicesRow.querySelectorAll(".try-practice"), function(x) {
-                x.setAttribute("aria-pressed", x === b ? "true" : "false");
+                if (x === b) return;
+                x.classList.remove("is-armed");
+                x.removeAttribute("data-armed");
             });
+            b.classList.add("is-armed");
+            b.setAttribute("data-armed", "1");
             var how = b.getAttribute("data-how") || "";
             var name = (b.querySelector(".nm") || {}).textContent || "";
             say(streakMsg, how ? how + " Then tap " + name + " again." : "Tap " + name + " again once you have done it.");
             return;
         }
-        b.setAttribute("aria-pressed", "true");
         b.disabled = true;
         rpc("askru_try_streak", {
             p_token: token,
@@ -2289,16 +2373,15 @@ if (reduce || !("IntersectionObserver" in window)) {
             var j = res.body || {};
             b.disabled = false;
             if (!(res.status >= 200 && res.status < 300) || !j.ok) {
-                b.setAttribute("aria-pressed", "false");
                 say(streakMsg, "That did not save. Try once more.", "bad");
                 return;
             }
             pickedPractice = null;
+            markDone(key);
             streakTitle.textContent = streakHeading(j.days || 0, !!j.today);
             say(streakMsg, "");
         }).catch(function() {
             b.disabled = false;
-            b.setAttribute("aria-pressed", "false");
             say(streakMsg, "That did not save. Try once more.", "bad");
         });
     });
@@ -2624,28 +2707,22 @@ if (reduce || !("IntersectionObserver" in window)) {
     /* ============================================================= 20 Nov 2026
        🔴 READINGS ARE PAUSED ON THIS SURFACE, ON THE FOUNDER'S WORD.
 
-       WHY. The QA session asked a Tarot reading here, in Hinglish, that
-       disclosed suicidal intent — "lagta hai sab khatam kar doon. Koi ummeed
-       hai?" — and Ru answered with a romance card ("naya love, naya
-       connection"), wrote back the person's own words about himself as though
-       agreeing with them, and told him to look at a "helpline panel" beside the
-       screen. There is no such panel on this page.
-
-       The cause is not a bad prompt or a bad model. The edge function behind
-       every reading on this site (try-ru) calls NEITHER the distress classifier
-       NOR any of the output guards: measured, zero occurrences of
-       classifyDistress, moderateText, claimsHelpOnScreen, offersAPhoneNumber or
-       helplines-setting, against two positive controls in the same file to prove
-       the search works. The two-level crisis handling built for the app on
-       20 Nov was never wired to this surface.
+       TO TURN READINGS BACK ON: set this to false. That is the whole change.
 
        ⚠️ THE WAITLIST IS UNTOUCHED AND STILL WORKS. Somebody can still join;
-       they simply are not offered a reading until the crisis layer is live here.
-       The sentence they see is the one this page already had for exactly this
-       state, a few hundred lines down — so nobody is told a new thing, and
-       nothing promises a reading that will not come.
+       they simply are not offered a reading while this is true. The sentence
+       they see is the one this page already had for exactly this state, a few
+       hundred lines down — so nobody is told a new thing, and nothing promises
+       a reading that will not come.
 
-       TO TURN READINGS BACK ON: set this to false. That is the whole change.
+       ⚠️ THIS FLAG IS NOT A SECURITY CONTROL. It lives in the browser, so it
+       stops the UI and nothing else; the server decides what it will serve.
+       Never treat it as the thing protecting anybody.
+
+       🔵 EVERY COMMENT IN THIS FILE IS SERVED TO EVERY VISITOR, from a public
+       repository, and is crawlable. Keep them to what this page does for the
+       person reading it. Engineering history, incidents, and anything about how
+       a safety control is built belong in the private repo.
        ============================================================= */
     var READINGS_PAUSED = true;
 
@@ -2655,7 +2732,7 @@ if (reduce || !("IntersectionObserver" in window)) {
        reading — saw the honest line, and a FIRST-TIME visitor, who is the whole
        audience of a join-the-list page, still read "Join the list, and she
        reads you once". The fix was inverted: it told the truth to exactly the
-       people it did not matter to. Found by the QA session, in a fresh browser,
+       people it did not matter to. Caught in review, in a fresh browser,
        which is the path I did not test.
 
        So it runs HERE, at load, before anything asks whether there is a token.
@@ -2692,6 +2769,24 @@ if (reduce || !("IntersectionObserver" in window)) {
     }
     if (token) {
         showPick(false);
+        /* 🔴 THE RAZORPAY RETURN, AND WHY IT IS NOT A WAY PAST THE PAUSE.
+           20 Nov 2026, measured on the rendered paused page rather
+           than reasoned about. This handler unhides #try-modes and writes a
+           "You are back. Ask Ru your question below" line — which reads, in the
+           source, exactly like a door around READINGS_PAUSED. It is not one.
+           #try-modes, #try-form and #try-msg are all children of #try-pick,
+           and the pause branch of showPick() hides #try-pick itself, so with the
+           flag on this line is written into a subtree nobody can see: measured
+           on the live page, modes height 0, form hidden, no mode buttons.
+
+           ⚠️ THE LINE IS STILL READABLE TO A TOOL. textContent does not care
+           about visibility, which is how a check of this page could report that
+           a visitor was invited to ask during a pause. If you are testing the
+           pause, measure what is on SCREEN, not what is in the DOM.
+
+           And the first probe of this found nothing because the test URL
+           carried only razorpay_payment_link_status — the handler needs the
+           _id. A false negative on the URL, not on the code. */
         (function() {
             var status = null;
             try {
@@ -2825,6 +2920,7 @@ if (reduce || !("IntersectionObserver" in window)) {
         });
         birth.hidden = chosen !== "vedic";
         ritual.hidden = false;
+        say(ritualMsg, "");
         ritualClosing.textContent = chosen === "vedic" ? "Then press Read." : "Then pick your card.";
         ritualGo.textContent = chosen === "vedic" ? "Read" : "Pick my card";
         cards.hidden = true;
@@ -2858,17 +2954,22 @@ if (reduce || !("IntersectionObserver" in window)) {
         say(msg, "");
         gateAsk();
     });
+    /* 🔴 WHAT THE READ BUTTON NEEDS, ASKED IN ONE PLACE — 20 Nov 2026.
+       gateAsk() held this test privately, so the Read button could not ask it
+       and pressed on regardless: it hid the ritual panel — the panel holding
+       itself — while the question box was still gated shut on empty birth
+       details, and the visitor was left looking at nothing with no control to
+       press. Two readers of one condition is how they drift, so there is one. */
+    function readyToAsk() {
+        if (cardsWanted) return picked !== null;
+        var dob = document.getElementById("try-dob");
+        var tob = document.getElementById("try-tob");
+        var pob = document.getElementById("try-pob");
+        if (prashna) return !!(pob && pob.value.trim());
+        return !!(dob && dob.value) && !!(tob && tob.value) && !!(pob && pob.value.trim());
+    }
     function gateAsk(move) {
-        var open;
-        if (cardsWanted) {
-            open = picked !== null;
-        } else {
-            var dob = document.getElementById("try-dob");
-            var tob = document.getElementById("try-tob");
-            var pob = document.getElementById("try-pob");
-            open = prashna ? !!(pob && pob.value.trim()) : !!(dob && dob.value) && !!(tob && tob.value) && !!(pob && pob.value.trim());
-        }
-        if (!open) return;
+        if (!readyToAsk()) return;
         if (askForm.hidden) askForm.hidden = false;
         if (!move) return;
         try {
@@ -3721,7 +3822,7 @@ if (reduce || !("IntersectionObserver" in window)) {
       var pk = p.paksha === "shukla" ? "Shukla " : p.paksha === "krishna" ? "Krishna " : "";
       /* 🔴 AND WHEN EACH OF THEM STOPS BEING TRUE — 20 Nov 2026.
 
-         The QA session read this line at 7pm and was told "nakshatra: Purva
+         Read at 7pm, this line said "nakshatra: Purva
          Bhadrapada". It was correct at sunrise and had ended at 6:56am; Uttara
          Bhadrapada ran the other twelve hours. Naming the day by its sunrise
          tithi is proper convention, so the words were not wrong — but with no

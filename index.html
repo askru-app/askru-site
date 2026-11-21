@@ -2979,6 +2979,10 @@ if (reduce || !("IntersectionObserver" in window)) {
         picked = null;
         prashna = false;
         askForm.hidden = true;
+        /* 🔴 21 Nov 2026 — the angel goes with the section. Tarot’s angel sitting
+           above an Oracle reading is the same wrongness as Tarot's cards would be,
+           and this handler already clears everything else for that reason. */
+        resetAngel();
         out.innerHTML = "";
         if (chartsEl) {
             chartsEl.innerHTML = "";
@@ -3538,6 +3542,14 @@ if (reduce || !("IntersectionObserver" in window)) {
             };
         }
         bubble("you", text);
+        /* 🔴 21 Nov 2026 — AND BEFORE THE CALL, NOT AFTER IT. A second reading in the
+           SAME section never passes through the mode switch, so without this line the
+           latch survives it. It has to run HERE rather than in the .then below, because
+           render() assigns the NEW angel on its way through — clearing afterwards would
+           throw away the very angel this reading just drew.
+           ⚠️ NOT on the follow-up form below: a follow-up continues THIS reading, and
+           the angel it was taken for still has to be the one Ru reads through. */
+        resetAngel();
         api("try-ru", {
             body: body
         }).then(function(res) {
@@ -3571,6 +3583,34 @@ if (reduce || !("IntersectionObserver" in window)) {
     var angelLine = document.getElementById("try-angel-line");
     var angelSays = document.getElementById("try-angel-says");
     var theAngel = null;
+    /* 🔴 THE ANGEL WAS A ONE-WAY LATCH — 21 November 2026.
+       FOUNDER, testing the live site: *"oracle mai angel aya nahi"*. He was right,
+       and the Oracle section is innocent. Every one of these variables was moved in
+       exactly ONE place — the "Get me an angel" click handler below — and in no
+       place was any of them ever moved back. Not on a mode switch, not on a new
+       reading, nowhere in this file.
+       So once he took ARIEL during Tarot, angelOut.hidden was false and angelGo.hidden
+       was true FOR THE REST OF THE SESSION. When his Oracle reading came back, the
+       guard in render() reads "if (angelOut.hidden) angelWrap.hidden = false;" — false,
+       so nothing opened — while the line above it quietly replaced theAngel with the
+       Oracle's angel. An angel was drawn, was sent, and had no way to appear.
+       ⚠️ AND IT WAS NOT ONLY THE ANGEL. angelTaken gates the five-card button
+       (deeperBtn.disabled = !angelTaken) and hides its hint. Latched true, every later
+       reading opened with the five already unlocked — the exact thing that gate was
+       written to prevent: five cards read by an angel that read nothing.
+       The guard on the first line is for the one call that could arrive before these
+       elements have been looked up. */
+    function resetAngel() {
+        if (!angelWrap || !angelGo || !angelOut) return;
+        theAngel = null;
+        angelTaken = false;
+        angelGo.hidden = false;
+        angelOut.hidden = true;
+        angelWrap.hidden = true;
+        if (angelName) angelName.textContent = "";
+        if (angelLine) angelLine.textContent = "";
+        if (angelSays) { angelSays.textContent = ""; angelSays.hidden = true; }
+    }
     var veil = document.getElementById("angel-veil");
     var seal = document.getElementById("angel-seal");
     var vName = document.getElementById("angel-name");

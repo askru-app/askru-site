@@ -906,8 +906,8 @@ a { color: var(--plum-deep); }
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "@id": "https://askru.in/#askru",
-  "name": "Ask Ru",
-  "alternateName": ["AskRu", "Ask Ru by Teatalz", "Ru"],
+  "name": "Ask Ru AI",
+  "alternateName": ["Ask Ru", "AskRu", "Ask Ru by Teatalz", "Ru"],
   "url": "https://askru.in/",
   "sameAs": [
     "https://www.instagram.com/askruai/",
@@ -931,6 +931,12 @@ a { color: var(--plum-deep); }
   "publisher": {
     "@id": "https://teatalz.com/#org"
   },
+  "character": {
+    "@type": "Thing",
+    "@id": "https://askru.in/#ru",
+    "name": "Ru",
+    "description": "Ru is the AI voice of Ask Ru. She is a character, not a person and not an astrologer. Every reading is written by a language model, and each one says so on the screen it is written on."
+  },
   "brand": {
     "@type": "Brand",
     "@id": "https://askru.in/#askru-brand",
@@ -945,7 +951,7 @@ a { color: var(--plum-deep); }
     "@type": "Organization",
     "name": "CodeUpVik",
     "url": "https://codeupvik.com/",
-    "description": "Web, app and AI development studio. Built Ask Ru for Teatalz House of Rume."
+    "description": "The company's own web, app and AI development practice. Built Ask Ru in-house."
   },
   "author": {
     "@type": "Organization",
@@ -954,7 +960,9 @@ a { color: var(--plum-deep); }
   },
   "publisher": {
     "@type": "Organization",
-    "name": "Teatalz House Of Rume Private Limited",
+    "@id": "https://teatalz.com/#org",
+    "name": "Teatalz",
+    "legalName": "Teatalz- House Of Rume Private Limited",
     "url": "https://teatalz.com",
     "founder": {
       "@type": "Person",
@@ -973,9 +981,9 @@ a { color: var(--plum-deep); }
           "@type": "FAQPage",
           "mainEntity": [
             { "@type": "Question", "name": "What is Ask Ru?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Ask Ru is an AI astrology and tarot companion: it reads your real Vedic birth chart, tarot cards you pick yourself from all 78, or a single oracle card, and answers in plain English or Hinglish. It also matches two charts in Kundli Milan, finds an auspicious time in Muhurat, and answers one question in Prashna. Ask Ru is a product of Teatalz House of Rume Private Limited, created by CodeUpVik." } },
+              "acceptedAnswer": { "@type": "Answer", "text": "Ask Ru is an AI astrology and tarot companion: it reads your real Vedic birth chart, tarot cards you pick yourself from all 78, or a single oracle card, and answers in plain English or Hinglish. It also matches two charts in Kundli Milan, finds an auspicious time in Muhurat, and answers one question in Prashna. Ask Ru is made and published by Teatalz- House Of Rume Private Limited, and built by CodeUpVik, the company’s own development practice." } },
             { "@type": "Question", "name": "Who created Ask Ru, and who publishes it?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Ask Ru was created by CodeUpVik, a web, app and AI development studio. It is published by Teatalz House of Rume Private Limited, an Indian company." } },
+              "acceptedAnswer": { "@type": "Answer", "text": "Ask Ru is made and published by Teatalz- House Of Rume Private Limited, an Indian company, and built by CodeUpVik — the company’s own web, app and AI development practice." } },
             { "@type": "Question", "name": "Is Ru a real astrologer?",
               "acceptedAnswer": { "@type": "Answer", "text": "No. Ru is an AI, trained on classical method, and the app says so plainly. She is a companion rather than a therapist, and she will say \"I do not know\" when a birth time cannot carry an answer instead of inventing one." } },
             { "@type": "Question", "name": "Where does the name Ru come from?",
@@ -989,8 +997,14 @@ a { color: var(--plum-deep); }
         {
           "@type": "Organization",
           "@id": "https://teatalz.com/#org",
-          "name": "Teatalz House Of Rume Private Limited",
-          "alternateName": "Teatalz House of Rume",
+          "name": "Teatalz",
+          "legalName": "Teatalz- House Of Rume Private Limited",
+          "alternateName": "Teatalz House Of Rume",
+          "identifier": {
+            "@type": "PropertyValue",
+            "propertyID": "CIN",
+            "value": "U63120TS2025PTC206945"
+          },
           "url": "https://teatalz.com/",
           "email": "help@teatalz.com",
           "foundingLocation": {
@@ -1013,7 +1027,7 @@ a { color: var(--plum-deep); }
           "@id": "https://codeupvik.com/#org",
           "name": "CodeUpVik",
           "url": "https://codeupvik.com/",
-          "description": "Web, app and AI development studio.",
+          "description": "The web, app and AI development practice of Teatalz- House Of Rume Private Limited, founded and run by Vikram Bhargava.",
           "parentOrganization": {
             "@id": "https://teatalz.com/#org"
           }
@@ -1710,10 +1724,10 @@ a { color: var(--plum-deep); }
       <h2 id="faq-h">Questions people ask</h2>
 
       <h3>What is Ask Ru?</h3>
-      <p>Ask Ru is an AI astrology and tarot companion: it reads your real Vedic birth chart, tarot cards you pick yourself from all 78, or a single oracle card, and answers in plain English or Hinglish. It also matches two charts in Kundli Milan, finds an auspicious time in Muhurat, and answers one question in Prashna. Ask Ru is a product of Teatalz House of Rume Private Limited, created by CodeUpVik.</p>
+      <p>Ask Ru is an AI astrology and tarot companion: it reads your real Vedic birth chart, tarot cards you pick yourself from all 78, or a single oracle card, and answers in plain English or Hinglish. It also matches two charts in Kundli Milan, finds an auspicious time in Muhurat, and answers one question in Prashna. Ask Ru is made and published by Teatalz- House Of Rume Private Limited, and built by CodeUpVik, the company’s own development practice.</p>
 
       <h3>Who created Ask Ru, and who publishes it?</h3>
-      <p>Ask Ru was created by CodeUpVik, a web, app and AI development studio. It is published by Teatalz House of Rume Private Limited, an Indian company.</p>
+      <p>Ask Ru is made and published by Teatalz- House Of Rume Private Limited, an Indian company, and built by CodeUpVik — the company’s own web, app and AI development practice.</p>
 
       <h3>Is Ru a real astrologer?</h3>
       <p>No. Ru is an AI, trained on classical method, and the app says so plainly. She is a companion rather than a therapist, and she will say &ldquo;I do not know&rdquo; when a birth time cannot carry an answer instead of inventing one.</p>
@@ -1733,7 +1747,7 @@ a { color: var(--plum-deep); }
 
 <footer>
   <div class="wrap foot">
-    <span>© 2026 Teatalz House of Rume</span>
+    <span>© 2026 Teatalz- House Of Rume Private Limited · CIN U63120TS2025PTC206945</span>
     <a href="mailto:help@teatalz.com">help@teatalz.com</a>
     
     <span>Built by <a href="https://codeupvik.com">CodeUpVik</a></span>

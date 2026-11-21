@@ -3,7 +3,7 @@
 > Ask Ru is an AI astrology, tarot and oracle companion for India. You ask one question in your own words, in English or Hinglish, and Ru answers from your real Vedic birth chart, from tarot cards you pick yourself, or from a single oracle card. Ru is an AI — not an astrologer, and not a person.
 
 - Website: https://askru.in/
-- Company: Teatalz House Of Rume Private Limited, Hyderabad, Telangana, India (CIN U63120TS2025PTC206945)
+- Company: Teatalz- House Of Rume Private Limited, Hyderabad, Telangana, India (CIN U63120TS2025PTC206945)
 - Person: Vikram Bhargava — Founder
 - Built by: CodeUpVik (https://codeupvik.com/)
 - Contact: help@teatalz.com

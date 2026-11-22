@@ -1048,7 +1048,7 @@ function loadAskRuPanels() {
             box.innerHTML = SOON;
             return;
         }
-        var wl = d.waitlist || {}, rd = d.readings || {}, u = d.unit || {}, of = d.offer || {}, vs = d.visits || {};
+        var wl = d.waitlist || {}, rd = d.readings || {}, u = d.unit || {}, of = d.offer || {}, vs = d.visits || {}, rv = d.revenue || {};
         var html = [];
         var seatsTaken = Number(of.seats_taken || 0), seatsTotal = Number(of.seats_total || 0);
         /* 🔴 VISITS AND THE UNIT COST FIRST — 20 Nov 2026, the founder asked for both
@@ -1061,7 +1061,7 @@ function loadAskRuPanels() {
         html.push('<div class="tr-grid">'
           + trStat(fmtInt(vs.total), "visits to askru.in", (vs.devices ? fmtInt(vs.devices) + " devices" : "") + (vs.devices ? " · " : "") + "our own included")
           + trStat(isFinite(Number(u.cost_rupees)) ? "₹" + Number(u.cost_rupees).toFixed(2) : "—", "cost of one reading", isFinite(Number(u.price_rupees)) ? "sells for ₹" + Number(u.price_rupees).toFixed(0) : "")
-          + trStat(fmtInt(wl.total), "on the waiting list", "+" + fmtInt(wl.week) + " this week") + trStat(fmtInt(rd.total), "readings given", modeLine(rd.by_mode)) + trStat(seatsTotal ? fmtInt(Math.max(0, seatsTotal - seatsTaken)) : "—", "free readings left", seatsTotal ? fmtInt(seatsTaken) + " of " + fmtInt(seatsTotal) + " taken" : "") + trStat(of.weekly_months ? of.weekly_months + " months" : "—", "free weekly reading", (of.launch_at ? "from " + esc(fmtDay(of.launch_at)) : "from the day the app opens") + (of.tier2_max ? ", first " + fmtInt(of.tier2_max) : "")) + "</div>");
+          + trStat(fmtInt(wl.total), "on the waiting list", "+" + fmtInt(wl.week) + " this week") + trStat(fmtInt(rd.total), "readings given", modeLine(rd.by_mode)) + trStat(isFinite(Number(rv.rupees)) ? "₹" + fmtInt(rv.rupees) : "—", "revenue so far", (rv.readings ? fmtInt(rv.readings) + " paid " + (Number(rv.readings) === 1 ? "reading" : "readings") : "") + (rv.payers ? " · " + fmtInt(rv.payers) + (Number(rv.payers) === 1 ? " visitor" : " visitors") : "")) + trStat(seatsTotal ? fmtInt(Math.max(0, seatsTotal - seatsTaken)) : "—", "free readings left", seatsTotal ? fmtInt(seatsTaken) + " of " + fmtInt(seatsTotal) + " taken" : "") + trStat(of.weekly_months ? of.weekly_months + " months" : "—", "free weekly reading", (of.launch_at ? "from " + esc(fmtDay(of.launch_at)) : "from the day the app opens") + (of.tier2_max ? ", first " + fmtInt(of.tier2_max) : "")) + "</div>");
         var cost = Number(u.cost_rupees), price = Number(u.price_rupees);
         if (isFinite(cost) && isFinite(price) && price > 0) {
             var scale = Math.max(cost, price);

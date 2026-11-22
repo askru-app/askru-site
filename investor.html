@@ -512,19 +512,16 @@
     <div id="docmsg" class="inv-msg ok" role="status" aria-live="polite"></div>
 
     
-    <div id="greeting" class="greet-scrim" hidden>
-      <div class="greet-card" role="dialog" aria-modal="true" aria-labelledby="greet-h">
-        <button class="greet-x" type="button" id="greet-x" aria-label="Close">×</button>
-        <div class="greet-eyebrow">👋 Welcome</div>
-        <h3 id="greet-h">Good to see you, <span id="greet-name"></span>.</h3>
-        <p><strong>Ask Ru</strong> will be <strong>ready by November 2026</strong>. The <strong>Teatalz</strong> launch is being re-planned as funds allow. Teatalz is a solopreneur project, and I run it myself.</p>
-        
-        <p>I have put <strong>over ₹24 lakh</strong> of my own into it so far.</p>
-        <p>If you would like to talk, I would like to hear from
-           you. <strong>Both rooms update every Tuesday</strong>, so you can watch the build either way.</p>
-        <p class="greet-cta">Let's connect — <a href="mailto:founder@teatalz.com">founder@teatalz.com</a></p>
-      </div>
-    </div>
+    <!-- 🔴 THE WELCOME DIALOG IS GONE — 22 November 2026, the founder: "Ye pop hatao".
+         It met every named visitor with "Ask Ru will be ready by November 2026" (it IS
+         November 2026), "Teatalz is a solopreneur project, and I run it myself" (Saurabh
+         joins the investor meetings), and "Both rooms update every Tuesday". Three claims
+         the company had moved past, shown before anybody had seen a document.
+
+         ⚠️ `greet()` IS KEPT AS A NO-OP BELOW, not deleted. It is called from two places,
+         and this file has its own note about a thrown TypeError inside a handler leaving
+         the screen frozen with no error anyone can see. The same reason the listeners that
+         reached for #greet-x went with the markup rather than being left to find nothing. -->
 
     <p class="foot">
       Questions? Reach the founder at <a href="mailto:founder@teatalz.com" style="color:var(--ink-2)">founder@teatalz.com</a>.<br />
@@ -1163,38 +1160,13 @@ async function loadAskRuBuild() {
     }
 }
 
-var greeted = false;
-
-function greet() {
-    if (greeted) return;
-    var first = String(visitor.name || "").trim().split(/\s+/)[0] || "";
-    if (!first) return;
-    try {
-        if (sessionStorage.getItem("tz_greeted")) {
-            greeted = true;
-            return;
-        }
-        sessionStorage.setItem("tz_greeted", "1");
-    } catch (e) {}
-    greeted = true;
-    $("greet-name").textContent = first;
-    $("greeting").hidden = false;
-    $("greet-x").focus();
-}
-
-function closeGreeting() {
-    $("greeting").hidden = true;
-}
-
-$("greet-x").addEventListener("click", closeGreeting);
-
-$("greeting").addEventListener("click", function(e) {
-    if (e.target === this) closeGreeting();
-});
-
-document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape" && !$("greeting").hidden) closeGreeting();
-});
+/* 🔴 22 Nov 2026 — THE WELCOME DIALOG WAS REMOVED and this is deliberately still
+   a function. It is called from two places further down; deleting it would throw
+   a ReferenceError inside the very handlers that load the rooms, and this file
+   already carries a note about a thrown error in a handler leaving the screen
+   frozen with nothing on it that anyone can see. The markup it filled is gone,
+   so there is nothing left for it to do. */
+function greet() {}
 
 async function loadTraction() {
     try {

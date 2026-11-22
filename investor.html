@@ -1117,8 +1117,30 @@ async function loadAskRuWaitlist() {
             return;
         }
         var head = '<div class="wl-count">' + total.toLocaleString("en-IN") + "<small>" + (total === 1 ? "person on the waiting list" : "people on the waiting list") + "</small></div>";
-        var rows = people.map(function(p) {
-            return "<tr>" + '<td class="wl-rank">' + (p.rank == null ? "—" : esc(String(p.rank))) + "</td>" + "<td>" + esc(p.name || "—") + "</td>" + '<td class="wl-mail">' + esc(p.email || "—") + "</td>" + "<td>" + esc(p.language || "—") + "</td>" + "<td>" + esc(fmtDay(p.joined)) + "</td>" + "</tr>";
+        /* 🔴 THE NUMBER IN THIS COLUMN IS A POSITION IN THIS TABLE, NOT join_rank
+           — 22 November 2026.
+
+           The founder, looking at the live page: "waiting list 4 se kyo shuru ho
+           rahi hai and abhi 42 hai live waiting list". He was reading a table
+           whose headline said 32 and whose last row was numbered 42, starting at
+           4 with 7 and 8 missing.
+
+           `p.rank` is `join_rank`, the row's position in the WHOLE list including
+           our own ten test entries — which this page filters out and must. So the
+           gaps were the removed rows, drawn for an investor to count. The number
+           and the list contradicted each other on the one page whose whole claim
+           is "counted from our own database, not an estimate".
+
+           ⚠️ `join_rank` ITSELF IS NOT WRONG AND IS NOT TOUCHED. It decides who is
+           inside the first thousand and reads free, so it belongs to the row. It
+           just is not what a reader of THIS table is counting.
+
+           ⚠️ AND IT SURVIVES A SLICE. When this shows only the most recent rows,
+           numbering from 1 would be a different lie, so the first row shown takes
+           its true position among the people who are actually listed. */
+        var firstPos = people.length < total ? (total - people.length + 1) : 1;
+        var rows = people.map(function(p, i) {
+            return "<tr>" + '<td class="wl-rank">' + esc(String(firstPos + i)) + "</td>" + "<td>" + esc(p.name || "—") + "</td>" + '<td class="wl-mail">' + esc(p.email || "—") + "</td>" + "<td>" + esc(p.language || "—") + "</td>" + "<td>" + esc(fmtDay(p.joined)) + "</td>" + "</tr>";
         }).join("");
         var table = '<div class="wl-tablewrap"><table class="wl">' + "<thead><tr><th>#</th><th>Name</th><th>Email</th><th>Language</th><th>Joined</th></tr></thead>" + "<tbody>" + rows + "</tbody></table></div>";
         var slice = people.length < total ? '<p class="wl-slice">Showing the ' + people.length + " most recent of " + total.toLocaleString("en-IN") + ".</p>" : "";

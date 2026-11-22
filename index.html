@@ -2162,11 +2162,32 @@ if (reduce || !("IntersectionObserver" in window)) {
         if (b) b.value = p.pob || "";
         chosenPlaceId = p.placeId || null;
         if (q && p.q) q.value = p.q;
-        /* 🔴 A CARD IS NEVER RESTORED. Tarot and Oracle need the person to pick
-           their own card — his ruling — so those two come back to the pick, not
-           to the ask. `readyToAsk` already refuses while `picked` is null and
-           that is left to do its job rather than worked around here. */
+        /* 🔴 A CARD IS NEVER RESTORED, BUT THE PERSON MUST REACH THE PICK —
+           22 November 2026, and this is the half I got wrong the first time.
+
+           A paid Oracle reading was taken live and never delivered: the payment
+           landed at 09:03:36, the credit was never claimed, and the session
+           never asked again. The restore put the mode back and stopped, because
+           `readyToAsk` refuses while `picked` is null — correctly, the person
+           picks their own card. So the ask box never opened, while the sentence
+           beside it said "your details are back — ask Ru below". There was
+           nothing to ask with. They gave up, and the money stayed taken.
+
+           ⚠️ I TESTED VEDIC AND SHIPPED ALL THREE. Vedic restores to a form and
+           looks right; the two card modes do not, and nothing I ran went near
+           them.
+
+           Pressing the ritual button is what carries on: for a card mode it
+           lays the deck out at the pick, and for Vedic it closes the ritual and
+           opens the ask. One call, because the button already knows the
+           difference — a second copy of that branch here is a second place to
+           keep correct. It is guarded: on Vedic the button refuses unless the
+           details are really there, which is the same refusal a person would
+           meet, and leaving them at the ritual is then the honest outcome. */
         gateAsk(true);
+        try {
+            if (ritualGo && ritual && !ritual.hidden) ritualGo.click();
+        } catch (e) {}
         return true;
     }
     function api(path, opts) {
@@ -2968,12 +2989,20 @@ if (reduce || !("IntersectionObserver" in window)) {
                of zero is simply "after this script has finished attaching
                itself", which is exactly the condition being waited on. */
             var saidLine = function (restored) {
+                /* 🔴 WHAT IS ACTUALLY ON SCREEN DECIDES THE SENTENCE — 22 Nov
+                   2026. "ask Ru below" was printed above a card pick with no
+                   ask box on it, to somebody who had just paid. Read from the
+                   page rather than assumed: `cardsWanted` is set by the mode
+                   this restore just chose. */
+                var next = restored
+                    ? (cardsWanted ? "pick your card and ask" : "ask Ru below")
+                    : "pick your reading and ask below";
                 var line = status === "paid"
                     ? (restored
-                        ? "Payment received. Your details are back as you left them — ask Ru below. If it is still settling, give it a moment and ask again."
+                        ? "Payment received. You are back where you were — " + next + ". If it is still settling, give it a moment and ask again."
                         : "Payment received. Pick your reading and ask below — if it is still settling, give it a moment and ask again.")
                     : (restored
-                        ? "You are back, and your details are as you left them. If you finished the payment, ask below; if you did not, the offer is still here."
+                        ? "You are back where you were — if you finished the payment, " + next + "; if you did not, the offer is still here."
                         : "You are back. If you finished the payment, ask below; if you did not, the offer is still here.");
                 if (!msg) return;
                 if (typeof say === "function") say(msg, line, "ok"); else msg.textContent = line;

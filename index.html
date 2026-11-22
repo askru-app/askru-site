@@ -2089,6 +2089,86 @@ if (reduce || !("IntersectionObserver" in window)) {
             } catch (e) {}
         }
     }
+    /* ── 🔴 WHAT A PERSON WHO PAID COMES BACK TO — 22 November 2026 ─────────
+       The founder: "website pe user ne payment kar but usko payment ki baad jo
+       redirect kiya wo homepage pe kar diya jaha usko fir details dalne ko bola
+       but free reading khatam ho gaye esa bola ... saurab ne test kiya tha usne
+       reading le kyoki old tab open tha".
+
+       WHAT ACTUALLY HAPPENS, and it is not what it first looks like. `payTabOpen`
+       opens a NEW tab and Razorpay returns the browser to THAT tab, at the bare
+       site root. So the person is looking at a fresh askru.in with nothing in it:
+       no mode, no birth details, and a free reading already spent — which is
+       exactly the two sentences he was shown. The tab that still holds their
+       reading is the one BEHIND it, which is the only reason Saurabh got his.
+
+       ⚠️ IT IS NOT THE POPUP BLOCKER. `opened_as` is recorded on every order
+       and the database has NOT ONE 'same' row, so the tab always opened. The
+       tidy explanation was wrong and the column is what said so.
+
+       ⚠️ AND THE TAB CANNOT ASK THE OTHER ONE. `payTabGo` sets `tab.opener =
+       null` on purpose, against reverse tabnabbing. So the returning tab has to
+       be able to stand on its own, which is what this is: the state is written
+       down before the browser leaves, and read back when it returns.
+
+       🔵 THE SERVER WAS NEVER THE PROBLEM. `try-ru` already claims a paid,
+       unused credit when it would otherwise refuse — so a person who simply
+       reaches the ask box gets the reading they paid for. Nothing here touches
+       the money; it only gets them back to the box. */
+    var PEND = "askru_try_pending";
+    /** An hour: long enough for any payment, short enough that an abandoned one
+        does not come back days later and fill the form with a stale chart. */
+    var PEND_MS = 3600000;
+
+    function savePending() {
+        try {
+            var d = document.getElementById("try-dob"),
+                t = document.getElementById("try-tob"),
+                p = document.getElementById("try-pob");
+            window.localStorage.setItem(PEND, JSON.stringify({
+                mode: chosen,
+                dob: d ? d.value : "",
+                tob: t ? t.value : "",
+                pob: p ? p.value : "",
+                placeId: chosenPlaceId,
+                q: q ? q.value : "",
+                at: Date.now()
+            }));
+        } catch (e) {}
+    }
+
+    function restorePending() {
+        var p = null;
+        try {
+            p = JSON.parse(window.localStorage.getItem(PEND) || "null");
+        } catch (e) {}
+        if (!p || !p.mode || !p.at || Date.now() - p.at > PEND_MS) {
+            try {
+                window.localStorage.removeItem(PEND);
+            } catch (e) {}
+            return false;
+        }
+        /* The mode button, not the variables it sets: pressing it is what puts
+           the whole section into the state that mode needs, and a hand-written
+           copy of those eight assignments is a second place to keep correct. */
+        var btn = modes ? modes.querySelector('.try-mode[data-mode="' + p.mode + '"]') : null;
+        if (!btn) return false;
+        btn.click();
+        var d = document.getElementById("try-dob"),
+            t = document.getElementById("try-tob"),
+            b = document.getElementById("try-pob");
+        if (d) d.value = p.dob || "";
+        if (t) t.value = p.tob || "";
+        if (b) b.value = p.pob || "";
+        chosenPlaceId = p.placeId || null;
+        if (q && p.q) q.value = p.q;
+        /* 🔴 A CARD IS NEVER RESTORED. Tarot and Oracle need the person to pick
+           their own card — his ruling — so those two come back to the pick, not
+           to the ask. `readyToAsk` already refuses while `picked` is null and
+           that is left to do its job rather than worked around here. */
+        gateAsk(true);
+        return true;
+    }
     function api(path, opts) {
         opts = opts || {};
         var init = {
@@ -2224,6 +2304,10 @@ if (reduce || !("IntersectionObserver" in window)) {
                         keepalive: true
                     }).catch(function() {});
                 } catch (e) {}
+                /* 🔴 Before the browser goes anywhere. Razorpay returns to a
+                   bare askru.in and whatever is only in this page's memory is
+                   gone by then. */
+                savePending();
                 payTabGo(payTab, b.payUrl);
                 return;
             }
@@ -2871,10 +2955,37 @@ if (reduce || !("IntersectionObserver" in window)) {
             var msg = document.getElementById("try-msg");
             if (m) m.hidden = false;
             gateAsk();
-            var line = status === "paid" ? "You are back. Ask Ru your question below — if the payment is still settling, give it a moment and ask again." : "You are back. If you finished the payment, ask below; if you did not, the offer is still here.";
-            if (msg) {
+            /* 🔴 22 Nov 2026 — this used to open the mode list and say "ask
+               below" at a form with nothing in it. The details are put back
+               first, and the sentence says which of the two happened.
+
+               ⚠️ DEFERRED BY A TICK, AND THAT IS NOT TIDINESS. This block runs
+               where it sits in the script; the mode buttons are wired by a
+               delegated listener further DOWN, so a restore called from here
+               pressed a button nothing was listening to. Measured on the local
+               copy before this line existed: the three fields came back and the
+               mode did not — birth block hidden, aria-pressed unset. A timeout
+               of zero is simply "after this script has finished attaching
+               itself", which is exactly the condition being waited on. */
+            var saidLine = function (restored) {
+                var line = status === "paid"
+                    ? (restored
+                        ? "Payment received. Your details are back as you left them — ask Ru below. If it is still settling, give it a moment and ask again."
+                        : "Payment received. Pick your reading and ask below — if it is still settling, give it a moment and ask again.")
+                    : (restored
+                        ? "You are back, and your details are as you left them. If you finished the payment, ask below; if you did not, the offer is still here."
+                        : "You are back. If you finished the payment, ask below; if you did not, the offer is still here.");
+                if (!msg) return;
                 if (typeof say === "function") say(msg, line, "ok"); else msg.textContent = line;
-            }
+            };
+            saidLine(false);
+            setTimeout(function () {
+                var ok = false;
+                try {
+                    ok = restorePending();
+                } catch (e) {}
+                if (ok) saidLine(true);
+            }, 0);
             var target = f && !f.hidden ? f : m;
             if (target) {
                 try {

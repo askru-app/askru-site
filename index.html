@@ -2127,6 +2127,14 @@ if (reduce || !("IntersectionObserver" in window)) {
                 p = document.getElementById("try-pob");
             window.localStorage.setItem(PEND, JSON.stringify({
                 mode: chosen,
+                /* 🔴 PRASHNA IS NOT A MODE, IT IS A BRANCH INSIDE VEDIC — and
+                   that is exactly why it was missed. Somebody who answered "No,
+                   I do not know my birth details" is in `vedic` with
+                   `prashna = true` and only a place to give. Restoring the mode
+                   alone drops them back into the full birth form and asks for a
+                   date, a time and a place they do not have — the same dead end
+                   the card modes were in, reached a different way. */
+                prashna: prashna,
                 dob: d ? d.value : "",
                 tob: t ? t.value : "",
                 pob: p ? p.value : "",
@@ -2154,6 +2162,16 @@ if (reduce || !("IntersectionObserver" in window)) {
         var btn = modes ? modes.querySelector('.try-mode[data-mode="' + p.mode + '"]') : null;
         if (!btn) return false;
         btn.click();
+        /* 🔴 The Prashna branch, before the fields: pressing the button is what
+           hides the birth fields, shows the Prashna note and sets the flag that
+           `readyToAsk` consults — eight things this must not keep its own copy
+           of. Only on the mode that has the branch. */
+        if (p.prashna && p.mode === "vedic") {
+            try {
+                var noBtn = document.getElementById("try-birth-prashna");
+                if (noBtn) noBtn.click();
+            } catch (e) {}
+        }
         var d = document.getElementById("try-dob"),
             t = document.getElementById("try-tob"),
             b = document.getElementById("try-pob");

@@ -2276,6 +2276,31 @@ if (reduce || !("IntersectionObserver" in window)) {
     /* Set when the person presses "Get me an angel" — not when one is merely
        available, because the gate is about their choice, not our draw. */
     var angelTaken = false;
+    /* 🔴 DECLARED HERE, ABOVE ITS FIRST USE — moved 25 Nov 2026.
+       It was first written beside READINGS_PAUSED, 680 lines BELOW this point.
+       The gates inside showBuyIfSpent() and the click handler still worked,
+       because those run later and the var is assigned by then. The setup-time
+       guard right under this block did NOT: at that moment the hoisted var was
+       still undefined, so the button stayed visible and enabled inside a hidden
+       box. It read correctly in the source and did nothing in the browser,
+       which is the only reason it was caught — by looking at the live page
+       rather than at the diff. */
+    /* 🔴 PAID QUESTIONS OFF FOR THE TEST WINDOW — 25 November 2026.
+       Founder: "for testing abhi payment gateway off kar de for 24 hours …
+       website pe se ask another question pe bhi wo option off kar de", and
+       "website pe ek line likh diyo paid questions are off for testing will be
+       back after 24 hours".
+       This is NARROWER than READINGS_PAUSED on purpose. That switch pauses the
+       whole reading flow, free reading included, and testers need the free one
+       to have anything to review. This hides only the thing that takes money:
+       the "Read me again — ₹51" box. The free follow-up ("Ask her something
+       else") calls try-ru and charges nothing, so it stays.
+       🔴 SET THIS BACK TO false WHEN THE WINDOW CLOSES. Nothing turns it off by
+       itself, and a payment path that is quietly off earns nothing while
+       looking perfectly healthy — which is harder to notice than an outage. */
+    var PAID_QUESTIONS_OFF = true;
+    var PAID_OFF_NOTE = "Paid questions are off while we test. They will be back in 24 hours. Your free reading is unaffected.";
+
     var buyBox = document.getElementById("try-buy");
     var buyGo = document.getElementById("try-buy-go");
     var buyMsg = document.getElementById("try-buy-msg");
@@ -2943,21 +2968,7 @@ if (reduce || !("IntersectionObserver" in window)) {
        ============================================================= */
     var READINGS_PAUSED = false;
 
-    /* 🔴 PAID QUESTIONS OFF FOR THE TEST WINDOW — 25 November 2026.
-       Founder: "for testing abhi payment gateway off kar de for 24 hours …
-       website pe se ask another question pe bhi wo option off kar de", and
-       "website pe ek line likh diyo paid questions are off for testing will be
-       back after 24 hours".
-       This is NARROWER than READINGS_PAUSED on purpose. That switch pauses the
-       whole reading flow, free reading included, and testers need the free one
-       to have anything to review. This hides only the thing that takes money:
-       the "Read me again — ₹51" box. The free follow-up ("Ask her something
-       else") calls try-ru and charges nothing, so it stays.
-       🔴 SET THIS BACK TO false WHEN THE WINDOW CLOSES. Nothing turns it off by
-       itself, and a payment path that is quietly off earns nothing while
-       looking perfectly healthy — which is harder to notice than an outage. */
-    var PAID_QUESTIONS_OFF = true;
-    var PAID_OFF_NOTE = "Paid questions are off while we test. They will be back in 24 hours. Your free reading is unaffected.";
+
 
     /* Our own preview while readings are paused. The link carries a key once,
        the key is kept on this browser, and the reading panel opens here and

@@ -2280,6 +2280,18 @@ if (reduce || !("IntersectionObserver" in window)) {
     var buyGo = document.getElementById("try-buy-go");
     var buyMsg = document.getElementById("try-buy-msg");
     var buyPaise = null;
+    /* 🔴 TAKE THE BUTTON OUT AT SETUP, NOT ONLY WHERE THE BOX IS SHOWN.
+       Measured on the live page after the first version of this change: the box
+       was hidden, and inside it the button still read "Read me again — ₹51",
+       un-hidden, because showBuyIfSpent() only runs once a reading has been
+       taken in this browser. Harmless as long as nothing else un-hides the box
+       — and this file's own comment, written after the ₹31 button took money
+       outside the pause, says that is not an assumption worth making about a
+       path that charges. So it comes out here, before any path can reach it. */
+    if (PAID_QUESTIONS_OFF && buyGo) {
+      buyGo.hidden = true;
+      buyGo.disabled = true;
+    }
     api("try-reading-pay", {
         method: "GET"
     }).then(function(res) {
